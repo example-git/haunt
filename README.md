@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/demo/logo.png" alt="Haunt owl logo" width="144">
+</p>
+
 # Haunt
 
 **Your community. Your server. One familiar client.**
@@ -12,6 +16,8 @@ container publishing. The repositories are private while development continues.
 Haunt is built for friends and small groups, with storage and bandwidth budgets an
 individual can manage. It does not claim complete Discord parity or an independent
 security audit.
+
+![Haunt channels, audio settings and a voice call](assets/demo/Multiple-Horizontal.png)
 
 ## Choose a starting point
 
