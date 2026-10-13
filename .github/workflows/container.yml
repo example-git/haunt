@@ -1,81 +1,127 @@
 name: Publish coordinated container
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: Container version, major.minor.patch
-        required: true
+        description: 'Image version (defaults to the pinned client version)'
+        required: false
         type: string
 permissions:
   contents: read
-  packages: write
-concurrency:
-  group: coordinated-container-${{ inputs.version }}
-  cancel-in-progress: false
 jobs:
-  image:
+  build:
+    outputs:
+      version: ${{ steps.release.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - {runner: ubuntu-24.04, arch: amd64}
-          - {runner: ubuntu-24.04-arm, arch: arm64}
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - name: Validate version
-        env:
-          VERSION: ${{ inputs.version }}
-        run: '[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]'
-      - uses: ./.github/actions/components
+      - id: components
+        uses: ./.github/actions/components
         with:
           server-key: ${{ secrets.HAUNT_SERVER_READ_KEY }}
           client-key: ${{ secrets.HAUNT_CLIENT_READ_KEY }}
           plugin-key: ${{ secrets.HAUNT_PLUGIN_READ_KEY }}
+      - id: release
+        name: Select image version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          if [ -n "$REQUESTED_VERSION" ]; then
+            version="$REQUESTED_VERSION"
+          elif [[ "$RELEASE_REF" =~ ^v[0-9] ]]; then
+            version="${RELEASE_REF#v}"
+          else
+            version=$(node -p 'require("./client/package.json").version')
+          fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Image version must be major.minor.patch' >&2; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+      - name: Validate startup scripts
+        run: shellcheck server/deploy/container/*.sh
       - uses: docker/build-push-action@v6
         with:
           context: server
           load: true
+          platforms: linux/${{ matrix.arch }}
           tags: haunt:check
+          build-args: HAUNT_VERSION=${{ steps.release.outputs.version }}
           labels: |
             org.opencontainers.image.source=https://github.com/example-git/haunt
             org.opencontainers.image.revision=${{ github.sha }}
-          build-args: HAUNT_VERSION=${{ inputs.version }}
-          cache-from: type=gha,scope=master-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=master-${{ matrix.arch }}
+            org.opencontainers.image.version=${{ steps.release.outputs.version }}
+            vg.xo.haunt.server-revision=${{ steps.components.outputs.server }}
+            vg.xo.haunt.client-revision=${{ steps.components.outputs.client }}
+          cache-from: type=gha,scope=coordinated-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=coordinated-${{ matrix.arch }}
       - run: python3 scripts/test-container.py haunt:check
         working-directory: server
-      - name: Publish tested architecture
-        env:
-          VERSION: ${{ inputs.version }}
-          ARCH: ${{ matrix.arch }}
-          REVISION: ${{ github.sha }}
+      - name: Export image
         run: |
-          tag="ghcr.io/example-git/haunt:$VERSION-$ARCH-${REVISION:0:12}"
-          docker tag haunt:check "$tag"
-          docker push "$tag"
-  manifest:
-    needs: image
+          mkdir -p release
+          docker save haunt:check | gzip > release/haunt-linux-${{ matrix.arch }}.docker.tar.gz
+          cd release
+          sha256sum *.docker.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: haunt-container-linux-${{ matrix.arch }}
+          path: release/*
+  publish:
+    needs: build
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: haunt-container-linux-*
+          path: release
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ github.token }}
-      - name: Publish multi-architecture tag
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish tested images and multiarchitecture tags
         env:
-          VERSION: ${{ inputs.version }}
-          REVISION: ${{ github.sha }}
+          IMAGE_VERSION: ${{ needs.build.outputs.version }}
+          SOURCE_REVISION: ${{ github.sha }}
         run: |
-          docker buildx imagetools create --tag "ghcr.io/example-git/haunt:$VERSION" \
-            "ghcr.io/example-git/haunt:$VERSION-amd64-${REVISION:0:12}" \
-            "ghcr.io/example-git/haunt:$VERSION-arm64-${REVISION:0:12}"
+          image=ghcr.io/example-git/haunt
+          sources=()
+          for arch in amd64 arm64; do
+            directory="release/haunt-container-linux-$arch"
+            (cd "$directory" && sha256sum --check SHA256SUMS)
+            gzip -dc "$directory/haunt-linux-$arch.docker.tar.gz" | docker load
+            test "$(docker image inspect haunt:check --format '{{.Architecture}}')" = "$arch"
+            test "$(docker image inspect haunt:check --format '{{index .Config.Labels "org.opencontainers.image.source"}}')" = "https://github.com/example-git/haunt"
+            test "$(docker image inspect haunt:check --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$SOURCE_REVISION"
+            test "$(docker image inspect haunt:check --format '{{index .Config.Labels "org.opencontainers.image.version"}}')" = "$IMAGE_VERSION"
+            target="$image:build-$SOURCE_REVISION-$arch"
+            docker tag haunt:check "$target"
+            docker push "$target"
+            sources+=("$(docker image inspect "$target" --format '{{index .RepoDigests 0}}')")
+          done
+          docker buildx imagetools create --tag "$image:$IMAGE_VERSION" --tag "$image:latest" "${sources[@]}"
+          docker buildx imagetools inspect "$image:$IMAGE_VERSION" --raw > manifest.json
+          docker buildx imagetools inspect "$image:latest" --raw > latest-manifest.json
+          cmp manifest.json latest-manifest.json
+          python3 - <<'PY'
+          import json
+          with open('manifest.json') as stream:
+              manifest = json.load(stream)
+          platforms = {(entry['platform']['os'], entry['platform']['architecture']) for entry in manifest['manifests']}
+          assert platforms == {('linux', 'amd64'), ('linux', 'arm64')}, platforms
+          PY

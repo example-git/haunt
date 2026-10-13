@@ -10,6 +10,16 @@ inputs:
   plugin-key:
     required: true
     description: Read-only RNNoise deploy key
+outputs:
+  server:
+    description: Pinned server revision
+    value: ${{ steps.pins.outputs.server }}
+  client:
+    description: Pinned client revision
+    value: ${{ steps.pins.outputs.client }}
+  plugin:
+    description: Pinned plugin revision
+    value: ${{ steps.pins.outputs.plugin }}
 runs:
   using: composite
   steps:

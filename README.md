@@ -17,13 +17,14 @@ security audit.
 
 | What you want | Where to go |
 | --- | --- |
-| Run a server in one container | [Container quick start](https://github.com/example-git/haunt-server/blob/main/docs/container.md) |
-| Build a server with the web client embedded | [Server README](https://github.com/example-git/haunt-server#readme) |
-| Build a desktop or separately hosted web client | [Client README](https://github.com/example-git/haunt-client#readme) |
+| Run a server in one container | [Install and retrieve credentials](docs/installation.md) |
+| Build a server with the web client embedded | [Server build guide](docs/server/index.md) |
+| Build a desktop or separately hosted web client | [Client build guide](docs/client/index.md) |
 | Create a noise-suppression plugin | [Plugin developer map](docs/audio-plugins.md) |
 | See the interface | [Demo gallery](docs/gallery.md) |
-| Download the desktop client | [Client releases](https://github.com/example-git/haunt-client/releases/latest) |
+| Download the desktop client | [Central downloads](https://github.com/example-git/haunt/releases/latest) |
 | Find coordinated releases | [Master releases](https://github.com/example-git/haunt/releases) |
+| Browse all documentation | [Documentation index](docs/index.md) |
 | Understand release publishing | [Release layout](docs/releases.md) |
 
 A release appears only when its artifacts have actually been prepared. A source
@@ -50,8 +51,8 @@ cd haunt
 python3 scripts/check-pins.py
 ```
 
-Build the complete server with `cd server && scripts/build-server.sh`, or follow
-its container guide. Work on the client in `client/`; after a
+Build the complete server with `cd server && scripts/build-server.sh`, or use the published image with the
+[central installation guide](docs/installation.md). Work on the client in `client/`; after a
 client release/version commit, update both client pins deliberately before updating
 the master. Do not use `git submodule update --remote` as a release procedure.
 
@@ -68,5 +69,5 @@ and operator maintenance still matter. Read the component security and recovery
 documentation before deploying a community.
 
 Haunt is independent of Discord. Product names describe familiar behavior, not an
-affiliation. Existing component repositories remain private; creating this hub does
-not publish them or change existing users' update sources.
+affiliation. Existing component repositories remain private; coordinated downloads and containers live here; existing users'
+update sources remain compatible.
