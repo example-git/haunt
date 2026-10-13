@@ -1,11 +1,13 @@
-<p align="center">
-  <img src="assets/demo/logo.png" alt="Haunt owl logo" width="144">
-</p>
-
-# Haunt
-
-**Your community. Your server. One familiar client.**
-
+<table align="center" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="center" valign="middle">
+      <img src="assets/demo/logo.png" alt="Haunt owl logo" width="144">
+    </td>
+    <td align="left" valign="middle">
+      <h1 align="left">Haunt</h1>
+    </td>
+  </tr>
+</table>
 Haunt recreates the everyday convenience of Discord from scratch around independent,
 self-hosted communities. Channels, direct messages, calls, profiles and moderation
 belong to the server you choose. The client keeps several communities within reach,
