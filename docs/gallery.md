@@ -59,4 +59,3 @@ Native Windows Mica and macOS vibrancy are not simulated in these images.
 ## Server-scoped member profile
 
 ![Server-scoped member profile](../assets/demo/10-profile.png)
-
