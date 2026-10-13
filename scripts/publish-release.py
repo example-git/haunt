@@ -71,6 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("version")
     parser.add_argument("--server-tag")
+    parser.add_argument("--sync-run",type=int,help="Successful sync workflow run for this exact hub revision")
     parser.add_argument("--publish", action="store_true", help="Publish after verification; otherwise stage only")
     args = parser.parse_args()
     if not SEMVER.fullmatch(args.version):
@@ -151,6 +152,32 @@ def main():
                   "server": {"revision": server_revision, "tag": server_tag, "version": manifest["version"]},
                   "rnnoise": {"revision": run("git", "-C", "audio-plugins/rnnoise", "rev-parse", "HEAD")},
                   "image": f"ghcr.io/{REPOSITORY}:{args.version}"}
+    if args.sync_run:
+        sync_run=api(f"repos/{REPOSITORY}/actions/runs/{args.sync_run}")
+        if sync_run["conclusion"]!="success" or sync_run["head_sha"]!=revision or sync_run["path"]!=".github/workflows/sync.yml":
+            raise ValueError("Sync artifacts must come from the successful workflow for this exact hub revision")
+        artifacts=output/".sync";artifacts.mkdir(parents=True,exist_ok=True)
+        run("gh","run","download",str(args.sync_run),"--repo",REPOSITORY,"--dir",str(artifacts))
+        for group in ["haunt-sync-linux-amd64","haunt-sync-linux-arm64","haunt-sync-publisher"]:
+            directory=artifacts/group
+            for line in (directory/"SHA256SUMS").read_text().splitlines():
+                expected,name=line.split(maxsplit=1);name=name.lstrip("*")
+                if not re.fullmatch(r"[A-Za-z0-9._-]+",name) or sha(directory/name)!=expected:
+                    raise ValueError("Sync artifact checksum mismatch")
+        publisher=artifacts/"haunt-sync-publisher"
+        if (publisher/"haunt-sync-source.txt").read_text().strip()!=revision:
+            raise ValueError("Trusted sign-in page source revision mismatch")
+        for arch,machine in [("amd64",62),("arm64",183)]:
+            binary=artifacts/f"haunt-sync-linux-{arch}"/f"haunt-sync-linux-{arch}"
+            header=binary.read_bytes()[:64]
+            if header[:6]!=b"\x7fELF\x02\x01" or struct.unpack_from("<H",header,18)[0]!=machine:
+                raise ValueError("Sync binary architecture mismatch")
+            shutil.copyfile(binary,output/binary.name)
+        shutil.copyfile(publisher/"haunt-sync-signin.tar.gz",output/"haunt-sync-signin.tar.gz")
+        with tarfile.open(output/"haunt-sync-signin.tar.gz") as archive:
+            if not any(member.name in {"index.html","./index.html"} for member in archive.getmembers()):
+                raise ValueError("Trusted sign-in archive has no entry point")
+        provenance["sync"]={"revision":revision,"workflow_run":args.sync_run,"image":f"ghcr.io/{REPOSITORY}:sync-{args.version}"}
     (output / "haunt-release.json").write_text(json.dumps(provenance, indent=2) + "\n")
     files = sorted(path for path in output.iterdir() if path.is_file() and path.name not in {"SHA256SUMS", "release-notes.md"})
     (output / "SHA256SUMS").write_text("".join(f"{sha(path)}  {path.name}\n" for path in files))

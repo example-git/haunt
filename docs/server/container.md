@@ -1,8 +1,13 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/58797387470c8003ce82ef503fee1f8bb80db691/docs/container.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/7dc6162a51f2bfed7b20c2d7f8af19cb548239b0/docs/container.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
-For the published image and first-login instructions, use the [central installation guide](https://github.com/example-git/haunt-server/blob/58797387470c8003ce82ef503fee1f8bb80db691/installation.md). The detailed source-build and runtime guide follows.
+For the published image and first-login instructions, use the [central installation guide](https://github.com/example-git/haunt-server/blob/7dc6162a51f2bfed7b20c2d7f8af19cb548239b0/installation.md). The detailed source-build and runtime guide follows.
 
 # One-container installation
+
+The canonical installation and credentials guide is in
+[example-git/haunt](https://github.com/example-git/haunt/blob/main/docs/installation.md).
+Its Compose setup uses the published image directly; this source checkout also
+supports the local builds below.
 
 The root `Dockerfile` builds an Alpine image with separate Nginx, PostgreSQL 16
 and Haunt processes. Nginx serves the pinned client submodule's production web

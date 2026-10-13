@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/b0aa4afcac529993ad50976ab3046c2c5693634f/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/503a0326fc2c39ac058fc4193fb7079c373c2bae/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt Client
 
@@ -43,7 +43,7 @@ This client does not federate accounts or messages between independent services.
 | macOS arm64 | Electron / DMG, native capture helpers |
 
 The shared TypeScript core keeps future mobile messaging in mind. An Android client
-is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/b0aa4afcac529993ad50976ab3046c2c5693634f/ANDROID.md). macOS builds target Apple
+is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/503a0326fc2c39ac058fc4193fb7079c373c2bae/ANDROID.md). macOS builds target Apple
 Silicon only. The current macOS distribution workflow leaves application signing to
 the person installing or distributing their baseline copy.
 

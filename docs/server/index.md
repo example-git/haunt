@@ -1,8 +1,12 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/58797387470c8003ce82ef503fee1f8bb80db691/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/7dc6162a51f2bfed7b20c2d7f8af19cb548239b0/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt Server
 
 **A self-hosted home for your community.**
+
+Downloads, container images, installation credentials and central documentation live
+in [example-git/haunt](https://github.com/example-git/haunt). This repository contains
+the server source and component build/verification workflows.
 
 Haunt is a from-scratch effort to recreate the convenience and core experience of
 Discord while keeping communities independent. Familiar channels, direct messages,
@@ -80,7 +84,7 @@ PostgreSQL and the Haunt server, with automatic HTTPS and a persistent data
 volume. Follow the [container quick start](container.md). Linux amd64 and
 arm64 are supported; the standalone binary workflow below is also available.
 
-Use [.env.example](https://github.com/example-git/haunt-server/blob/58797387470c8003ce82ef503fee1f8bb80db691/.env.example) as the configuration reference. Supply a dedicated
+Use [.env.example](https://github.com/example-git/haunt-server/blob/7dc6162a51f2bfed7b20c2d7f8af19cb548239b0/.env.example) as the configuration reference. Supply a dedicated
 PostgreSQL database, a persistent data directory, the service's public HTTPS URL and
 owner bootstrap credentials. Provide the settings through your process environment
 or service manager, then start the binary. Do not commit credentials.

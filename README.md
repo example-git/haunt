@@ -31,6 +31,7 @@ security audit.
 | Download the desktop client | [Central downloads](https://github.com/example-git/haunt/releases/latest) |
 | Find coordinated releases | [Master releases](https://github.com/example-git/haunt/releases) |
 | Browse all documentation | [Documentation index](docs/index.md) |
+| Run optional encrypted settings and sign-in sync | [Sync service and trust boundaries](sync/README.md) |
 | Understand release publishing | [Release layout](docs/releases.md) |
 
 A release appears only when its artifacts have actually been prepared. A source

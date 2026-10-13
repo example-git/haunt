@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/58797387470c8003ce82ef503fee1f8bb80db691/docs/moderation.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/7dc6162a51f2bfed7b20c2d7f8af19cb548239b0/docs/moderation.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server moderation
 

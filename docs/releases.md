@@ -17,6 +17,8 @@ before promoting it. The intended asset set is:
 - Linux amd64/arm64 server binaries, with the web client embedded.
 - `haunt-app-linux-*.tar.gz` and `haunt-app.json` for container application updates.
 - RNNoise package, source revisions and a release-wide SHA-256 file.
+- Optional sync binaries for Linux amd64/arm64 and the separately hosted trusted
+  sign-in page, copied from the successful sync workflow for the same hub revision.
 
 Prepare component releases at the pinned commits first. The client release
 workflow owns signing and platform builds. Keep its private signing key there;
@@ -101,3 +103,20 @@ continue through an authenticated Haunt server mirror; changing a feed remains
 an explicit operator choice. The container updater can use
 `HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt` after the matching central release
 has been published.
+
+## Optional sync publishing
+
+The hub’s `Build and publish optional sync` workflow runs real Go/browser protocol
+and SMTP transport checks, builds both native Linux targets, and verifies the
+production TLS container through encrypted upload and restart restore. It publishes
+the exact checked archives as `ghcr.io/example-git/haunt:sync-VERSION` and
+`sync-latest`. These tags share the project package and do not replace the
+community container’s `latest` tag.
+
+For releases including sync, pass `--sync-run RUN_ID` to `scripts/publish-release.py`
+after that workflow succeeds. Assembly requires its source revision to match the
+hub release tag, checks artifact hashes and binary architectures, and includes
+`haunt-sync-linux-amd64`, `haunt-sync-linux-arm64`, and `haunt-sync-signin.tar.gz`
+in the central download set and release-wide checksum file. The trusted page
+belongs on an independently controlled client-publisher origin, not the data
+service or a community server.
