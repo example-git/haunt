@@ -50,7 +50,7 @@ moving `latest` tag or automatic deployment to a live server.
 
 The runtime image contains Nginx, PostgreSQL and Supervisor, and persists its data
 and application release in a volume. Normal application updates do not rebuild
-the image; system/runtime changes do. See the [container guide](../server/docs/container.md).
+the image; system/runtime changes do. See the [container guide](https://github.com/example-git/haunt-server/blob/main/docs/container.md).
 Private GHCR images require registry authentication. GitHub package visibility is
 separate from repository visibility; deliberately check both before a public release.
 
