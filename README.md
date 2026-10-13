@@ -22,7 +22,8 @@ security audit.
 | Build a desktop or separately hosted web client | [Client README](https://github.com/example-git/haunt-client#readme) |
 | Create a noise-suppression plugin | [Plugin developer map](docs/audio-plugins.md) |
 | See the interface | [Demo gallery](docs/gallery.md) |
-| Download a coordinated release | [Releases](https://github.com/example-git/haunt/releases) |
+| Download the desktop client | [Client releases](https://github.com/example-git/haunt-client/releases/latest) |
+| Find coordinated releases | [Master releases](https://github.com/example-git/haunt/releases) |
 | Understand release publishing | [Release layout](docs/releases.md) |
 
 A release appears only when its artifacts have actually been prepared. A source
