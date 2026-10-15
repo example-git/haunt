@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.local/
+release/
+node_modules/
+__pycache__/
+*.pyc
+*.log
+*.key
+*.pem
+*.p12
+.DS_Store
+AGENTS.md
+.codex/
