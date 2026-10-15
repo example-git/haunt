@@ -1,0 +1,5 @@
+.env
+release/
+*.pem
+*.key
+test-results/

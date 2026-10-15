@@ -1,0 +1,9 @@
+[submodule "server"]
+	path = server
+	url = https://github.com/example-git/haunt-server.git
+[submodule "client"]
+	path = client
+	url = https://github.com/example-git/haunt-client.git
+[submodule "audio-plugins/rnnoise"]
+	path = audio-plugins/rnnoise
+	url = https://github.com/example-git/haunt-audio-rnnoise.git

@@ -1,0 +1,9 @@
+.env*
+!.env.example
+release
+*.key
+*.pem
+*.log
+test-results
+.local
+__pycache__
