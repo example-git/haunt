@@ -1,0 +1,52 @@
+services:
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      HAUNT_SYNC_HOST: ${HAUNT_SYNC_HOST:?Set the sync data-service hostname}
+    ports:
+      - "${HAUNT_SYNC_HTTP_PORT:-80}:80"
+      - "${HAUNT_SYNC_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - certificates:/data
+      - gateway_config:/config
+  sync:
+    image: ${HAUNT_SYNC_IMAGE:-ghcr.io/example-git/haunt:sync-latest}
+    restart: unless-stopped
+    stop_grace_period: 60s
+    network_mode: service:gateway
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      HAUNT_SYNC_ISSUER: https://${HAUNT_SYNC_HOST:?Set the sync data-service hostname}
+      HAUNT_SYNC_PORTAL_ORIGIN: ${HAUNT_SYNC_PORTAL_ORIGIN:?Set the separately trusted client-publisher sign-in origin}
+      HAUNT_SYNC_DATABASE_URL: postgres://haunt_sync:${HAUNT_SYNC_DB_PASSWORD:?Choose a database password}@database:5432/haunt_sync?sslmode=disable
+      HAUNT_SYNC_LISTEN_ADDR: 127.0.0.1:8090
+      HAUNT_SYNC_TRUSTED_PROXIES: 127.0.0.1/32,::1/128
+      HAUNT_SYNC_SMTP_HOST: ${HAUNT_SYNC_SMTP_HOST:-}
+      HAUNT_SYNC_SMTP_PORT: ${HAUNT_SYNC_SMTP_PORT:-587}
+      HAUNT_SYNC_SMTP_USERNAME: ${HAUNT_SYNC_SMTP_USERNAME:-}
+      HAUNT_SYNC_SMTP_PASSWORD: ${HAUNT_SYNC_SMTP_PASSWORD:-}
+      HAUNT_SYNC_MAIL_FROM: ${HAUNT_SYNC_MAIL_FROM:-}
+    depends_on:
+      database: {condition: service_healthy}
+      gateway: {condition: service_started}
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: haunt_sync
+      POSTGRES_USER: haunt_sync
+      POSTGRES_PASSWORD: ${HAUNT_SYNC_DB_PASSWORD:?Choose a database password}
+    volumes: [sync_database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U haunt_sync -d haunt_sync"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  sync_database:
+  certificates:
+  gateway_config:
