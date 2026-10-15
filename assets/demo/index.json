@@ -1,0 +1,62 @@
+{
+  "kind": "Actual web-client captures with isolated demo data",
+  "nativeWindowEffects": "Not captured or runtime-tested on this Linux host",
+  "shots": [
+    {
+      "file": "charcoal.png",
+      "description": "Charcoal theme with community chat and members"
+    },
+    {
+      "file": "06-appearance.png",
+      "description": "Theme presets and custom color controls"
+    },
+    {
+      "file": "midnight.png",
+      "description": "Midnight theme with community chat and members"
+    },
+    {
+      "file": "plum.png",
+      "description": "Plum theme with community chat and members"
+    },
+    {
+      "file": "forest.png",
+      "description": "Forest theme with community chat and members"
+    },
+    {
+      "file": "paper.png",
+      "description": "Paper theme with community chat and members"
+    },
+    {
+      "file": "ultraviolet.png",
+      "description": "Ultraviolet theme with community chat and members"
+    },
+    {
+      "file": "tidal.png",
+      "description": "Tidal theme with community chat and members"
+    },
+    {
+      "file": "afterglow.png",
+      "description": "Afterglow theme with community chat and members"
+    },
+    {
+      "file": "11-saved-themes.png",
+      "description": "Save, import and export named themes with editable colors"
+    },
+    {
+      "file": "07-audio-plugin.png",
+      "description": "RNNoise controls and administrator default selection"
+    },
+    {
+      "file": "08-voice.png",
+      "description": "Two participants in a real local voice call with pinned channel chat"
+    },
+    {
+      "file": "09-voice-pip.png",
+      "description": "Persistent voice controls and picture-in-picture while reading chat"
+    },
+    {
+      "file": "10-profile.png",
+      "description": "Server-scoped member profile"
+    }
+  ]
+}
