@@ -1,0 +1,60 @@
+name: Pinned components
+description: Check out public components at the exact coordinated gitlink revisions
+outputs:
+  server:
+    description: Pinned server revision
+    value: ${{ steps.pins.outputs.server }}
+  client:
+    description: Pinned client revision
+    value: ${{ steps.pins.outputs.client }}
+  plugin:
+    description: Pinned plugin revision
+    value: ${{ steps.pins.outputs.plugin }}
+  sync:
+    description: Pinned sync revision
+    value: ${{ steps.pins.outputs.sync }}
+runs:
+  using: composite
+  steps:
+    - id: pins
+      shell: bash
+      run: |
+        echo "server=$(git ls-tree HEAD server | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+        echo "client=$(git ls-tree HEAD client | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+        echo "plugin=$(git ls-tree HEAD audio-plugins/rnnoise | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+        echo "sync=$(git ls-tree HEAD sync | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v5
+      with:
+        repository: example-git/haunt-server
+        ref: ${{ steps.pins.outputs.server }}
+        path: server
+        persist-credentials: false
+    - uses: actions/checkout@v5
+      with:
+        repository: example-git/haunt-client
+        ref: ${{ steps.pins.outputs.client }}
+        path: client
+        persist-credentials: false
+    - id: embedded
+      shell: bash
+      run: echo "client=$(git -C server ls-tree HEAD client | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v5
+      with:
+        repository: example-git/haunt-client
+        ref: ${{ steps.embedded.outputs.client }}
+        path: server/client
+        persist-credentials: false
+    - uses: actions/checkout@v5
+      with:
+        repository: example-git/haunt-audio-rnnoise
+        ref: ${{ steps.pins.outputs.plugin }}
+        path: audio-plugins/rnnoise
+        persist-credentials: false
+    - uses: actions/checkout@v5
+      with:
+        repository: example-git/haunt-sync
+        ref: ${{ steps.pins.outputs.sync }}
+        path: sync
+        persist-credentials: false
+    - shell: bash
+      run: python3 scripts/check-pins.py

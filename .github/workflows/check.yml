@@ -1,0 +1,16 @@
+name: Coordinated source pins
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pins:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/components
+      - run: python3 scripts/sync-docs.py --check
+      - run: python3 scripts/check-docs.py
