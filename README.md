@@ -32,7 +32,7 @@ feature and has not received an independent security audit.
 | Download the desktop client | [Central downloads](https://github.com/example-git/haunt/releases/latest) |
 | Find coordinated releases | [Hub releases](https://github.com/example-git/haunt/releases) |
 | Browse all documentation | [Documentation index](docs/index.md) |
-| Run Haunt Nexus: optional encrypted sync, Cloudflare Tunnel and signed updates | [Sync service and trust boundaries](sync/README.md) |
+| Run Haunt Nexus: optional encrypted sync, Cloudflare Tunnel and signed updates | [Sync service and trust boundaries](https://github.com/example-git/haunt-sync) |
 | Understand release publishing | [Release layout](docs/releases.md) |
 
 For the prebuilt server container, client traffic goes to bundled Nginx on
