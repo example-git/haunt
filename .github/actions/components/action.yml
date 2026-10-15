@@ -1,0 +1,64 @@
+name: Pinned components
+description: Check out private components using separate read-only deploy keys
+inputs:
+  server-key:
+    required: true
+    description: Read-only server deploy key
+  client-key:
+    required: true
+    description: Read-only client deploy key
+  plugin-key:
+    required: true
+    description: Read-only RNNoise deploy key
+outputs:
+  server:
+    description: Pinned server revision
+    value: ${{ steps.pins.outputs.server }}
+  client:
+    description: Pinned client revision
+    value: ${{ steps.pins.outputs.client }}
+  plugin:
+    description: Pinned plugin revision
+    value: ${{ steps.pins.outputs.plugin }}
+runs:
+  using: composite
+  steps:
+    - id: pins
+      shell: bash
+      run: |
+        echo "server=$(git ls-tree HEAD server | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+        echo "client=$(git ls-tree HEAD client | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+        echo "plugin=$(git ls-tree HEAD audio-plugins/rnnoise | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v4
+      with:
+        repository: example-git/haunt-server
+        ref: ${{ steps.pins.outputs.server }}
+        path: server
+        ssh-key: ${{ inputs.server-key }}
+        persist-credentials: false
+    - uses: actions/checkout@v4
+      with:
+        repository: example-git/haunt-client
+        ref: ${{ steps.pins.outputs.client }}
+        path: client
+        ssh-key: ${{ inputs.client-key }}
+        persist-credentials: false
+    - id: embedded
+      shell: bash
+      run: echo "client=$(git -C server ls-tree HEAD client | awk '{print $3}')" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v4
+      with:
+        repository: example-git/haunt-client
+        ref: ${{ steps.embedded.outputs.client }}
+        path: server/client
+        ssh-key: ${{ inputs.client-key }}
+        persist-credentials: false
+    - uses: actions/checkout@v4
+      with:
+        repository: example-git/haunt-audio-rnnoise
+        ref: ${{ steps.pins.outputs.plugin }}
+        path: audio-plugins/rnnoise
+        ssh-key: ${{ inputs.plugin-key }}
+        persist-credentials: false
+    - shell: bash
+      run: python3 scripts/check-pins.py
