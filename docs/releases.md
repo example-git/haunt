@@ -116,7 +116,8 @@ community container’s `latest` tag.
 For releases including sync, pass `--sync-run RUN_ID` to `scripts/publish-release.py`
 after that workflow succeeds. Assembly requires its source revision to match the
 hub release tag, checks artifact hashes and binary architectures, and includes
-`haunt-sync-linux-amd64`, `haunt-sync-linux-arm64`, and `haunt-sync-signin.tar.gz`
-in the central download set and release-wide checksum file. The trusted page
-belongs on an independently controlled client-publisher origin, not the data
-service or a community server.
+`haunt-sync-linux-amd64` and `haunt-sync-linux-arm64` in the central download set
+and release-wide checksum file. Provenance records both the workflow's hub
+revision and the pinned sync source revision. Sync sign-in belongs to the desktop
+client; community browsers use desktop-approved pairing. No separate sign-in
+website or publisher archive is needed.
