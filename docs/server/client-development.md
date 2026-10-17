@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/74a5dd07cab555a0ed0ff0c14830349ed26b2004/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/070de102e46bdf063c3a3efd743916f8bf3c48e9/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Client development reference
 
@@ -23,7 +23,7 @@ Outputs are `docs/openapi.json`, `docs/websocket.json` and `docs/endpoints.md`. 
 
 When adding a route, add its contract in `internal/httpapi/openapi_contracts.go`, use a shared request/response type, regenerate and run the relevant tests. Update WebSocket sequencing metadata when adding a command; OpenAPI cannot infer protocol state machines or binary framing from Go types alone.
 
-Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/74a5dd07cab555a0ed0ff0c14830349ed26b2004/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
+Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/070de102e46bdf063c3a3efd743916f8bf3c48e9/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
 
 ## Rich message previews
 
