@@ -1,0 +1,59 @@
+name: Sync regressions
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protocol:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/components
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: sync/go.mod
+          cache-dependency-path: sync/go.sum
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+        working-directory: client
+      - name: Start isolated protocol database
+        run: |
+          docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 \
+            -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration \
+            -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine > "$RUNNER_TEMP/haunt-sync-container"
+          test "$(docker inspect chatxo-identity-check --format '{{.Config.Image}}')" = postgres:16-alpine
+          test "$(docker port chatxo-identity-check 5432/tcp)" = 127.0.0.1:32768
+          for _ in $(seq 1 60); do
+            if docker exec chatxo-identity-check pg_isready -U haunt_sync_iteration -d haunt_sync_iteration; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Exercise real protocol, secret changes, browser crypto and SMTP
+        working-directory: sync
+        env:
+          HAUNT_SYNC_TEST_DATABASE_URL: postgres://haunt_sync_iteration:synthetic-ci-fixture@127.0.0.1:32768/haunt_sync_iteration?sslmode=disable
+          HAUNT_SYNC_CLIENT_CHECKOUT: ${{ github.workspace }}/client
+        run: go test -race ./... -count=1 -timeout=180s -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sync-regression-evidence
+          path: client/test-results/
+          if-no-files-found: ignore
+      - name: Remove only this job's fixture
+        if: always()
+        run: |
+          if [ -s "$RUNNER_TEMP/haunt-sync-container" ]; then
+            docker rm -f -v "$(cat "$RUNNER_TEMP/haunt-sync-container")"
+          fi
