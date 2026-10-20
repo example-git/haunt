@@ -10,3 +10,6 @@
 [submodule "sync"]
 	path = sync
 	url = https://github.com/example-git/haunt-sync.git
+[submodule "extensions/tiktok-tts-plugin"]
+	path = extensions/tiktok-tts-plugin
+	url = https://github.com/example-git/tiktok-tts-plugin.git
