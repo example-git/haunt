@@ -18,8 +18,8 @@ before promoting it. The intended asset set is:
 - Linux amd64/arm64 server binaries, with the web client embedded.
 - `haunt-app-linux-*.tar.gz` and `haunt-app.json` for container application updates.
 - RNNoise package, source revisions and a release-wide SHA-256 file.
-- Optional sync binaries for Linux amd64/arm64 and the separately hosted trusted
-  sign-in page, copied from the successful sync workflow for the same hub revision.
+- Optional sync binaries for Linux amd64/arm64, copied from the successful sync
+  workflow for the same hub revision.
 
 Prepare component releases at the pinned commits first. The client release
 workflow owns signing and platform builds. Keep its private signing key there;
