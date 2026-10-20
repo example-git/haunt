@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/1000c6ad0d9e2f79df8543c5b8f6874b9e87d3ac/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/ec737cdab599c5a36808491ce92a484aa661cd08/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt Client
 
@@ -20,6 +20,7 @@ under active development and does not implement every Discord feature.
 - Voice rooms, camera/capture-card video and screen sharing with automatic transport selection.
 - Per-user/source volume settings, device selection, microphone monitoring and local audio controls.
 - Optional server audio plugins with cached packages and schema-driven settings.
+- Optional [text to speech](narrator.md) with server-hosted speech extensions and independently optional device TTS fallback.
 - Call tiles, speaking indicators, persistent controls and a movable picture-in-picture view.
 - Native desktop windows, call popouts, screen-source selection and native Apple Silicon capture.
 - Archive-based desktop updates, with signature verification and failed-startup rollback.
@@ -37,7 +38,7 @@ This client does not federate accounts or messages between independent services.
 | macOS arm64 | Electron / DMG, native capture helpers |
 
 The shared TypeScript core keeps future mobile messaging in mind. An Android client
-is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/1000c6ad0d9e2f79df8543c5b8f6874b9e87d3ac/ANDROID.md). macOS builds target Apple
+is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/ec737cdab599c5a36808491ce92a484aa661cd08/ANDROID.md). macOS builds target Apple
 Silicon only. The current macOS distribution workflow leaves application signing to
 the person installing or distributing their baseline copy.
 
@@ -151,6 +152,6 @@ Optional group-hosted synchronization, private client secrets and browser pairin
 ## License and participation
 
 Haunt-owned code in this repository is available under the
-[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/1000c6ad0d9e2f79df8543c5b8f6874b9e87d3ac/LICENSE). Bundled third-party assets retain their own
-notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/1000c6ad0d9e2f79df8543c5b8f6874b9e87d3ac/CONTRIBUTING.md) before submitting changes and
-[SECURITY.md](https://github.com/example-git/haunt-client/blob/1000c6ad0d9e2f79df8543c5b8f6874b9e87d3ac/SECURITY.md) for private vulnerability reports.
+[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/ec737cdab599c5a36808491ce92a484aa661cd08/LICENSE). Bundled third-party assets retain their own
+notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/ec737cdab599c5a36808491ce92a484aa661cd08/CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](https://github.com/example-git/haunt-client/blob/ec737cdab599c5a36808491ce92a484aa661cd08/SECURITY.md) for private vulnerability reports.
