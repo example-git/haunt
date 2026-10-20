@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9724a2bf50df02c43ec0b35e28bfe68f8c9b82cf/docs/api.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/989c9ea140133569917331d8d437e73ac5fedeb2/docs/api.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server API v1
 
@@ -176,6 +176,8 @@ Limits: 512 sockets per process, four per device session, 120 commands/minute pe
 The SFU preserves compatible MIME/clock/channel/fmtp parameters from negotiation. Pion's registered codecs include Opus, VP8, VP9, H.264, AV1 and others; there is no VP8-only rule. Incompatible receiver offers fail explicitly. No codec conversion/mixing/rendering is performed. RTP payloads stay encoded; per-hop packet identifiers/extensions are mapped, and RTCP keyframe requests are forwarded. Each receiver has its own bounded 128-packet queue; slow receivers drop packets without stalling other participants.
 
 `media.publish` with a new offer replaces that participant's publishing peer. Track changes trigger `media.tracks`; receivers must recreate their corresponding subscriptions. Old peer IDs are invalid. A new join creates a new participant ID. Client code should serialize signaling commands and match responses by peer/publisher IDs while continuing to process asynchronous events.
+
+New participants start with camera and screen off, matching the absence of published video at admission. Send a complete `media.state` with the appropriate `camera_off` or `screen_off` set to `false` when starting those sources. Joining by itself does not represent a screen-sharing action.
 
 `media.state` accepts a complete `state` with `muted`, `deafened`, `camera_off`, and `screen_off` booleans; the SFU enforces these directions. Microphone mute affects only `audio`; deafen blocks all incoming audio sources. Turning camera or screen off blocks both its video and its associated audio. `media.source_audio` advertises the additional audio purposes. `media.leave` leaves the room. Asynchronous events include `media.participant.joined`, `media.participant.left`, `media.participant.state`, `media.tracks`, and `media.revoked`. Room/session revocation and socket loss release owned peers. Defaults: 16 participants/room, 64 rooms, 512 total peer connections, and four unconsumed admissions per session. These are safety bounds, not measured capacity promises.
 
