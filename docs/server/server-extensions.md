@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/052001861250e18962fd4545902441c904bb34c0/docs/server-extensions.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9724a2bf50df02c43ec0b35e28bfe68f8c9b82cf/docs/server-extensions.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server extensions
 
@@ -87,9 +87,12 @@ responses are `audio/mpeg`. See the generated OpenAPI contract for request field
 
 ## Standalone provider project
 
-The hub's `extensions/tiktok-tts-plugin/` directory contains a standard-library
-Go provider module, metadata, documentation and transport tests, prepared for its
-own repository. The server currently bundles the same request implementation so
-it remains independently buildable before publication. Register a pinned module
-or submodule deliberately after moving/publishing the provider project; no Git
-publication or submodule registration is performed by setup.
+The [standalone provider repository](https://github.com/example-git/tiktok-tts-plugin)
+contains a standard-library Go module, metadata, documentation and transport tests.
+The hub pins that source under `extensions/tiktok-tts-plugin/`.
+
+This release compiles its bundled adapter in `internal/serverextension` into the
+server binary. Updating the server deploys that adapter and its API. The standalone
+source module is not a separately loadable runtime package or an uploadable plugin
+ZIP. Existing provider credentials and settings stay in the installation's private
+`server-extensions` directory across server updates.
