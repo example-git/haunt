@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/0d72e85bcfdb52475567a3e4d30f4161226a6a76/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt Client
 
@@ -39,7 +39,7 @@ This client does not federate accounts or messages between independent services.
 | macOS arm64 | Electron / DMG, native capture helpers |
 
 The shared TypeScript core keeps future mobile messaging in mind. An Android client
-is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/0d72e85bcfdb52475567a3e4d30f4161226a6a76/ANDROID.md). macOS builds target Apple
+is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/ANDROID.md). macOS builds target Apple
 Silicon only. The current macOS distribution workflow leaves application signing to
 the person installing or distributing their baseline copy.
 
@@ -153,6 +153,6 @@ Optional group-hosted synchronization, private client secrets and browser pairin
 ## License and participation
 
 Haunt-owned code in this repository is available under the
-[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/0d72e85bcfdb52475567a3e4d30f4161226a6a76/LICENSE). Bundled third-party assets retain their own
-notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/0d72e85bcfdb52475567a3e4d30f4161226a6a76/CONTRIBUTING.md) before submitting changes and
-[SECURITY.md](https://github.com/example-git/haunt-client/blob/0d72e85bcfdb52475567a3e4d30f4161226a6a76/SECURITY.md) for private vulnerability reports.
+[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/LICENSE). Bundled third-party assets retain their own
+notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/SECURITY.md) for private vulnerability reports.
