@@ -74,6 +74,12 @@ RNNoise ships as the default on fresh servers. Plugins process microphone audio
 locally through a restricted Wasm interface. Server operators can add compatible
 plugins; private operator packages are never part of this source tree or images.
 
+Server-hosted integrations are a separate **Server extensions** category, with
+owner-only setup and live testing. See the [extension projects](extensions/README.md)
+and [server extension guide](server/docs/server-extensions.md). The TikTok TTS
+provider source is pinned as a separate Git submodule under
+`extensions/tiktok-tts-plugin`.
+
 ## Trust and recovery
 
 Accounts use `username@server-address` and belong to that service. Servers do not
