@@ -39,6 +39,26 @@
       "description": "Afterglow theme with community chat and members"
     },
     {
+      "file": "rose-slate.png",
+      "description": "Rose Slate theme with community chat and members"
+    },
+    {
+      "file": "mint-ink.png",
+      "description": "Mint Ink theme with community chat and members"
+    },
+    {
+      "file": "peach-noir.png",
+      "description": "Peach Noir theme with community chat and members"
+    },
+    {
+      "file": "lilac-carbon.png",
+      "description": "Lilac Carbon theme with community chat and members"
+    },
+    {
+      "file": "wumpoff.png",
+      "description": "wumpoff theme with community chat and members"
+    },
+    {
       "file": "11-saved-themes.png",
       "description": "Save, import and export named themes with editable colors"
     },

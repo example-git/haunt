@@ -19,6 +19,8 @@ feature and has not received an independent security audit.
 
 ![Haunt channels, audio settings and a voice call](assets/demo/Multiple-Horizontal.png)
 
+[Refresh the banner and screenshots](docs/demo-captures.md) with `python3 scripts/update-banner.py`.
+
 ## Choose a starting point
 
 | What you want | Where to go |

@@ -1,0 +1,43 @@
+{
+  "kind": "Three actual browser screenshots; rounded black frame with transparent outer corners",
+  "generatedAt": "2026-10-20T20:49:29.968Z",
+  "clientCommit": "4be41a729fda5e7a653bebdea9692318be5d193c",
+  "clientModified": true,
+  "theme": "Midnight",
+  "width": 4880,
+  "height": 1040,
+  "padding": 20,
+  "gap": 20,
+  "outerRadius": 32,
+  "innerRadius": 12,
+  "sources": [
+    {
+      "file": "09-voice-pip.png",
+      "sha256": "078b51fdfc5e52407646ca103d80129f9ce5330e04c7cc51c145132e7cb408bb",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "file": "07-audio-plugin.png",
+      "sha256": "f016147cbcbe96bcb220f978e0f57e61b28218250cb57884bec24001b461da28",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "file": "08-voice.png",
+      "sha256": "0785907a6b29dae0bf2179c5e0baf36be6cead4130d3062983548807486fad1d",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "output": {
+    "file": "Multiple-Horizontal.png",
+    "sha256": "c11238e6646377c65d6687eaf45b5c398bb429a98601484449b1f89e237d4095"
+  },
+  "verified": {
+    "transparentOuterCorners": true,
+    "blackGutters": true,
+    "roundedInnerCorners": true,
+    "unscaledSources": true
+  }
+}

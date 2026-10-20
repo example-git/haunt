@@ -4,6 +4,8 @@ Actual browser captures from an isolated local server, using fictional accounts 
 The voice view shows two local test clients connected through the service.
 Native Windows Mica and macOS vibrancy are not simulated in these images.
 
+[Refresh these screenshots and the rounded README banner](demo-captures.md).
+
 ## Charcoal theme with community chat and members
 
 ![Charcoal theme with community chat and members](../assets/demo/charcoal.png)
@@ -39,6 +41,26 @@ Native Windows Mica and macOS vibrancy are not simulated in these images.
 ## Afterglow theme with community chat and members
 
 ![Afterglow theme with community chat and members](../assets/demo/afterglow.png)
+
+## Rose Slate theme with community chat and members
+
+![Rose Slate theme with community chat and members](../assets/demo/rose-slate.png)
+
+## Mint Ink theme with community chat and members
+
+![Mint Ink theme with community chat and members](../assets/demo/mint-ink.png)
+
+## Peach Noir theme with community chat and members
+
+![Peach Noir theme with community chat and members](../assets/demo/peach-noir.png)
+
+## Lilac Carbon theme with community chat and members
+
+![Lilac Carbon theme with community chat and members](../assets/demo/lilac-carbon.png)
+
+## wumpoff theme with community chat and members
+
+![wumpoff theme with community chat and members](../assets/demo/wumpoff.png)
 
 ## Save, import and export named themes with editable colors
 
