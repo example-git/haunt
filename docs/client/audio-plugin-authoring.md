@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/docs/audio-plugin-authoring.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/docs/audio-plugin-authoring.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Authoring an audio plugin
 
@@ -10,7 +10,7 @@ code. RNNoise is the server's bundled default, not a hard-coded client processor
 The [server guide](https://github.com/example-git/haunt/blob/main/docs/server/audio-plugin-authoring.md)
 explains installation and distribution. The [RNNoise adapter guide](https://github.com/example-git/haunt-audio-rnnoise/blob/main/docs/authoring.md)
 shows a complete denoiser. This guide starts with the public-domain gain fixture
-in [tests/fixtures/audio-plugin](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/tests/fixtures/audio-plugin).
+in [tests/fixtures/audio-plugin](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/tests/fixtures/audio-plugin).
 
 ## Working starter package
 
@@ -103,7 +103,7 @@ worker and releases the whole instance.
 
 ## Manifest and settings
 
-The complete runnable manifest is [here](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/tests/fixtures/audio-plugin/manifest.json).
+The complete runnable manifest is [here](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/tests/fixtures/audio-plugin/manifest.json).
 The required top-level fields are `version`, `id`, `name`, `description`,
 `default_variant`, `abi`, `variants` and `fields` (an empty array is valid).
 Use `variants: [{"id":"default","label":"My model","file":"default.wasm"}]`
@@ -193,7 +193,7 @@ the exact full Git revision and ZIP hash; install with the server's GitHub insta
 or upload the ZIP. Do not ship secret tokens, private datasets, generated recordings
 or weights whose redistribution terms you have not checked.
 
-Implementation references: [contract and resource validation](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/packages/browser/src/audio-plugins/contract.ts),
-[trusted worker](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/packages/browser/src/audio-plugins/processor-worker.ts),
-[cache](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/packages/browser/src/audio-plugins/cache.ts), and
-[selection persistence](https://github.com/example-git/haunt-client/blob/158c52a786259dcb62b8176efedec47b2296ff7b/packages/browser/src/audio-plugins/preferences.ts).
+Implementation references: [contract and resource validation](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/packages/browser/src/audio-plugins/contract.ts),
+[trusted worker](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/packages/browser/src/audio-plugins/processor-worker.ts),
+[cache](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/packages/browser/src/audio-plugins/cache.ts), and
+[selection persistence](https://github.com/example-git/haunt-client/blob/fcd29d9580ec951a869c2f26cb23e509bd4432b1/packages/browser/src/audio-plugins/preferences.ts).
