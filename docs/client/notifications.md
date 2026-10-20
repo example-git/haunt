@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/bcff4e9a27369e10ca505680f1e1aad7efa8ed71/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/68603b5c4618ed53d4deb7481229ef99c68d7a5c/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Notifications
 
@@ -31,7 +31,9 @@ or accounts sign out. macOS uses the Dock badge and menu-bar title. Allow Haunt
 alerts and badges in **System Settings → Notifications**. Linux uses the tray,
 window icon and the LauncherEntry badge API on supporting docks. Packaging and
 runtime share `com.exampleuser.haunt.desktop`, including Wayland app identity and
-X11 window grouping. A desktop without launcher badges still has the tray count.
+X11 window grouping. Linux native alerts require the system `libnotify` library
+(`libnotify4` on Ubuntu/Debian) and a running desktop notification service.
+A desktop without launcher badges still has the tray count.
 The desktop identity change requires a full installer update; the updater detects
 the changed launcher fingerprint and offers that installer. Existing profiles keep
 their current location.
