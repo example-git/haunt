@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/989c9ea140133569917331d8d437e73ac5fedeb2/docs/server-extensions.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/807aa296500ca1b84c4d6a5603546fc82fb74661/docs/server-extensions.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server extensions
 
@@ -6,14 +6,15 @@ Server extensions are trusted server-hosted integrations, separate from the
 Wasm microphone processors distributed through **Audio plugins**. The initial
 extension is a lightweight direct TikTok speech relay. Neither Cloudflare nor
 the Haunt desktop shell is needed: browser and desktop clients use the same API.
-The first provider is bundled and disabled until the owner configures it; this
+The first provider is bundled and disabled until an authorized administrator configures it; this
 release does not execute arbitrary uploaded extension code.
 
-## Owner setup and live test
+## Administrator setup and live test
 
-Open **Server settings → Server extensions**. Only the owner can view, change,
-clear or test provider configuration. Delegated ManageConfiguration permission
-does not expose this page or its privileged endpoints.
+Open **Server settings → Server extensions**. The owner, members with
+**Administrator**, and delegates with **Manage configuration** can view, change,
+clear or test provider configuration. Permission revocation applies to existing
+sessions immediately. Provider credentials remain write-only.
 
 1. Enter a TikTok `sessionid` from an account you control. It must be a 32-character
    hexadecimal token. This is the provider's session credential, not the old
@@ -46,7 +47,7 @@ user overrides apply only to the selected server/account.
 
 Device fallback is an independent preference. With an extension selected and
 fallback off, errors stay silent and report a failure; they do not invoke device
-speech or choose another server. Owner tests are also always extension-only.
+speech or choose another server. Administrator tests are also always extension-only.
 Disabling/unconfiguring a provider does not change a user's saved preferences.
 
 ## Relay boundary and limits
@@ -65,7 +66,7 @@ HTTPS origins are permitted:
 
 Redirects are refused, upstream errors are sanitized, requests time out, prompts
 are limited to 500 UTF-8 bytes and chunks to 300 bytes. The host allows two
-simultaneous generations, 30 requests per account per minute, and six owner tests
+simultaneous generations, 30 requests per account per minute, and six administrator tests
 per minute. Upstream failures trigger a short backoff; cancelled client requests
 do not lock out other listeners. Generated clips use a bounded memory-only cache
 (64 entries, 16 MiB, ten-minute expiry), invalidated on configuration changes.
@@ -77,9 +78,9 @@ not guarantee upstream availability in every region or for every voice.
 ## API
 
 - `GET /api/v1/server-extensions`: authenticated metadata without credentials.
-- `GET /api/v1/admin/server-extensions/{id}`: owner configuration/status.
-- `PUT /api/v1/admin/server-extensions/{id}`: owner save, rotate or clear token.
-- `POST /api/v1/admin/server-extensions/{id}/test`: owner live speech test.
+- `GET /api/v1/admin/server-extensions/{id}`: configuration/status (ManageConfiguration or Administrator).
+- `PUT /api/v1/admin/server-extensions/{id}`: save, rotate or clear token (ManageConfiguration or Administrator).
+- `POST /api/v1/admin/server-extensions/{id}/test`: live speech test (ManageConfiguration or Administrator).
 - `POST /api/v1/server-extensions/{id}/speech`: authenticated MP3 generation.
 
 The initial extension ID is `tiktok-tts`. Speech errors are JSON, successful

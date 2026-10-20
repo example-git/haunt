@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/989c9ea140133569917331d8d437e73ac5fedeb2/docs/architecture.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/807aa296500ca1b84c4d6a5603546fc82fb74661/docs/architecture.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 > Historical design: the client is now implemented. The October 12 DM update supersedes the original server-readable DM and shared-retention decisions below. See [DM encryption, independent limits and recovery](dm-security.md) for current DM behavior.
 

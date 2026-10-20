@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/989c9ea140133569917331d8d437e73ac5fedeb2/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/807aa296500ca1b84c4d6a5603546fc82fb74661/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Generated HTTP endpoints
 
@@ -25,7 +25,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | GET | `/api/v1/admin/audit` | List recent moderation and sampled access events (ViewAuditLog) | Bearer | 200 |
 | GET | `/api/v1/admin/bans` | List active bans (BanMembers) | Bearer | 200 |
 | GET | `/api/v1/admin/members/{id}/ips` | Read private member IP history (ViewMemberIPs) | Bearer | 200 |
-| GET | `/api/v1/admin/server-extensions/{id}` | Read server extension configuration and credential status (owner only) | Bearer | 200 |
+| GET | `/api/v1/admin/server-extensions/{id}` | Read server extension configuration and credential status (ManageConfiguration or Administrator) | Bearer | 200 |
 | GET | `/api/v1/admin/stats` | Inspect storage, pool, queue and media metrics (requires the corresponding server permission) | Bearer | 200 |
 | GET | `/api/v1/admin/storage` | List attachment storage providers; credentials are never returned (ManageConfiguration) | Bearer | 200 |
 | GET | `/api/v1/attachments/{id}` | Download an authorized attachment; supports Range and HEAD | Bearer | 200 |
@@ -80,7 +80,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | POST | `/api/v1/admin/maintenance` | Run bounded maintenance (requires the corresponding server permission) | Bearer | 204 |
 | POST | `/api/v1/admin/members/{id}/moderate` | Kick, ban, restore or delete a lower-ranked member | Bearer | 204 |
 | POST | `/api/v1/admin/members/{id}/password-reset` | Issue a temporary password and revoke sessions (Reset passwords permission; lower-ranked members only) | Bearer | 200 |
-| POST | `/api/v1/admin/server-extensions/{id}/test` | Test saved provider credentials with live speech, even while disabled (owner only) | Bearer | 200 |
+| POST | `/api/v1/admin/server-extensions/{id}/test` | Test saved provider credentials with live speech, even while disabled (ManageConfiguration or Administrator) | Bearer | 200 |
 | POST | `/api/v1/admin/storage` | Verify write/read/delete access and register private attachment storage (ManageConfiguration) | Bearer | 201 |
 | POST | `/api/v1/admin/storage/{id}/check` | Verify provider write/read/delete access (ManageConfiguration) | Bearer | 204 |
 | POST | `/api/v1/auth/ban/appeal` | Submit one plain-text appeal per ban per rolling 30 days | Public | 204 |
@@ -104,7 +104,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | PUT | `/api/v1/admin/audio-plugins/default` | Save default plugin, model and controls for new clients (ManageConfiguration) | Bearer | 200 |
 | PUT | `/api/v1/admin/members/{id}` | Disable or enable a member (owner) | Bearer | 204 |
 | PUT | `/api/v1/admin/members/{id}/password` | Set a temporary member password, require replacement, and revoke sessions | Bearer | 204 |
-| PUT | `/api/v1/admin/server-extensions/{id}` | Configure a server extension; credentials are write-only (owner only) | Bearer | 200 |
+| PUT | `/api/v1/admin/server-extensions/{id}` | Configure a server extension; credentials are write-only (ManageConfiguration or Administrator) | Bearer | 200 |
 | PUT | `/api/v1/admin/storage/active` | Select the provider for new uploads; existing files retain their provider (ManageConfiguration) | Bearer | 204 |
 | PUT | `/api/v1/admin/storage/{id}/credentials` | Verify and replace S3 credentials (ManageConfiguration) | Bearer | 204 |
 | PUT | `/api/v1/categories/{id}` | Update a category | Bearer | 200 |
