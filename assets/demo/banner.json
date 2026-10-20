@@ -1,8 +1,8 @@
 {
   "kind": "Three actual browser screenshots; rounded black frame with transparent outer corners",
-  "generatedAt": "2026-10-20T20:49:29.968Z",
-  "clientCommit": "4be41a729fda5e7a653bebdea9692318be5d193c",
-  "clientModified": true,
+  "generatedAt": "2026-10-20T21:42:26.861Z",
+  "clientCommit": "90bf8f5c020767ede2213d12fca81b29cbc5d510",
+  "clientModified": false,
   "theme": "Midnight",
   "width": 4880,
   "height": 1040,
@@ -13,26 +13,26 @@
   "sources": [
     {
       "file": "09-voice-pip.png",
-      "sha256": "078b51fdfc5e52407646ca103d80129f9ce5330e04c7cc51c145132e7cb408bb",
+      "sha256": "192ec014ab36913be53d217128799f7e634314c1d5773ea465dfc6310f47aae5",
       "width": 1600,
       "height": 1000
     },
     {
       "file": "07-audio-plugin.png",
-      "sha256": "f016147cbcbe96bcb220f978e0f57e61b28218250cb57884bec24001b461da28",
+      "sha256": "370c400d86683993426d9dc1f1cd324ae533df3671ee3124d87e1984c88db6bd",
       "width": 1600,
       "height": 1000
     },
     {
       "file": "08-voice.png",
-      "sha256": "0785907a6b29dae0bf2179c5e0baf36be6cead4130d3062983548807486fad1d",
+      "sha256": "3121ec0fc7afe35b4f0abb7fe953a590b26da968e8b4a7e3a8d5f173b675296f",
       "width": 1600,
       "height": 1000
     }
   ],
   "output": {
     "file": "Multiple-Horizontal.png",
-    "sha256": "c11238e6646377c65d6687eaf45b5c398bb429a98601484449b1f89e237d4095"
+    "sha256": "9b4020e2db52cd974cc22f560f0caa3ab2651a8c55bb3b8c363fd2c3cdcbeb4f"
   },
   "verified": {
     "transparentOuterCorners": true,
