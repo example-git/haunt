@@ -1,13 +1,7 @@
-<table align="center" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td align="center" valign="middle">
-      <img src="assets/demo/logo.png" alt="Haunt owl logo" width="144">
-    </td>
-    <td align="left" valign="middle">
-      <h1 align="left">Haunt</h1>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/haunt-wordmark.png" alt="Haunt" width="480">
+</p>
+
 This repository contains Haunt's central documentation, Compose configuration,
 screenshots, coordinated releases, and pinned server, client, and audio-plugin
 components. Haunt is self-hosted community chat with channels, direct messages,
