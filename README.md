@@ -24,6 +24,7 @@ feature and has not received an independent security audit.
 | Create a noise-suppression plugin | [Plugin developer map](docs/audio-plugins.md) |
 | See the interface | [Demo gallery](docs/gallery.md) |
 | Download the desktop client | [Central downloads](https://github.com/example-git/haunt/releases/latest) |
+| Install on Fedora | [RPM installation](docs/client/index.md#fedora-installation) |
 | Find coordinated releases | [Hub releases](https://github.com/example-git/haunt/releases) |
 | Browse all documentation | [Documentation index](docs/index.md) |
 | Run Haunt Nexus: optional encrypted sync, Cloudflare Tunnel and signed updates | [Sync service and trust boundaries](https://github.com/example-git/haunt-sync) |

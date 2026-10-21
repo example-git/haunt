@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/49720c73327baf766ff2fe56d5ca5504aab85999/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/b5578f3fbe26ef642fd2f96d5ea60c3e477be101/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop releases and updates
 
@@ -137,6 +137,7 @@ indicator available; the same notice does not repeat on every poll.
 | --- | --- |
 | Windows | Open NSIS installer, quit Haunt and upgrade the existing installation |
 | Linux AppImage | Verify and atomically replace the actual launch file, retaining `.haunt-previous` |
+| Fedora RPM | Verify and open the RPM in the system package installer; DNF manages the installed files |
 | macOS arm64 | Open the new DMG; install/sign the replacement app as needed |
 
 An extracted Linux directory build opens the downloaded AppImage instead of

@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/49720c73327baf766ff2fe56d5ca5504aab85999/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/b5578f3fbe26ef642fd2f96d5ea60c3e477be101/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Release qualification
 
@@ -15,6 +15,11 @@ installer, install into a temporary directory, launch with a private profile,
 install the candidate, then observe its version and preserved profile marker.
 Linux uses AppImage extraction; macOS copies the DMG application; Windows executes
 NSIS. The `installed-upgrade-*` artifacts record the result. No user profile is used.
+
+Linux jobs also install the RPM with DNF in a disposable Fedora container and launch
+the installed Electron application as an unprivileged user. They check the menu
+launcher, RPM update selection, package replacement, removal, and profile retention
+through reinstallation. Results are recorded in `fedora-rpm-*` artifacts.
 
 This checks full-installer replacement. Automatic ASAR restarts, OS prompts,
 physical capture, account recovery and perceived media quality need the checks

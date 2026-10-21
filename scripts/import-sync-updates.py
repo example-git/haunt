@@ -42,7 +42,7 @@ def main():
         stage = Path(stage)
         stage.chmod(0o755)
         for entry in targets.values():
-            for kind in ["asar", "installer"]:
+            for kind in ["asar", "installer"] + (["rpm"] if "rpm" in entry else []):
                 asset = entry[kind]
                 name, size, digest = asset["file"], asset["size"], asset["sha256"]
                 if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,160}", name) or not re.fullmatch(r"[a-f0-9]{64}", digest) or not isinstance(size, int) or not 0 < size <= 1<<30: raise ValueError("Invalid signed artifact")

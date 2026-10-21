@@ -111,7 +111,7 @@ def main():
         raise ValueError("Unexpected signed client platform set")
     selected = [client / "haunt-updates.json"]
     for target in signed["targets"].values():
-        for key in ["asar", "installer"]:
+        for key in ["asar", "installer"] + (["rpm"] if "rpm" in target else []):
             artifact = target[key]
             path = client / artifact["file"]
             if path.stat().st_size != artifact["size"] or sha(path) != artifact["sha256"]:
