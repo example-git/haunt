@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop releases and updates
 
@@ -138,12 +138,13 @@ indicator available; the same notice does not repeat on every poll.
 | Windows | Open NSIS installer, quit Haunt and upgrade the existing installation |
 | Linux AppImage | Verify and atomically replace the actual launch file, retaining `.haunt-previous` |
 | Fedora RPM | Verify and open the RPM in the system package installer; DNF manages the installed files |
-| macOS arm64 | Open the new DMG; install/sign the replacement app as needed |
+| macOS arm64 | Installations using the included local installer stage, sign, verify and replace the bundle with their persistent key, then relaunch; other installations open the DMG |
 
 An extracted Linux directory build opens the downloaded AppImage instead of
 modifying an unknown installation layout. A failed full-package installation is
 not covered by the ASAR startup rollback; retain the previous installer or recovery
-AppImage. Native platform installation and signing still need target-OS testing.
+AppImage. The macOS local installer retains a previous bundle and restores it if
+replacement fails. Native platform installation and signing require target-OS testing.
 
 ## Desktop status icons
 

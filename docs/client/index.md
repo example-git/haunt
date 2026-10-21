@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt Client
 
@@ -39,9 +39,18 @@ This client does not federate accounts or messages between independent services.
 | macOS arm64 | Electron / DMG, native capture helpers |
 
 The shared TypeScript core keeps future mobile messaging in mind. An Android client
-is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/ANDROID.md). macOS builds target Apple
+is not yet shipped; see [Android planning](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/ANDROID.md). macOS builds target Apple
 Silicon only. The current macOS distribution workflow leaves application signing to
 the person installing or distributing their baseline copy.
+
+### macOS installation
+
+The DMG includes **Install Haunt.command** and **Installation.txt**. Run the command
+with `bash` in Terminal and review its consent prompt. It creates a persistent
+code-signing identity in your user keychain and installs Haunt in `~/Applications`
+(or updates an existing `/Applications/Haunt.app`). Later **Update app** actions
+reuse that identity, stage and verify the replacement, then relaunch Haunt.
+The public download remains unsigned and is not notarized by Apple.
 
 ### Fedora installation
 
@@ -103,8 +112,9 @@ The app never restarts automatically during a call or upload.
 
 Changes to Electron, the launcher or native workers require a new baseline package.
 Windows uses its installer to update the existing installation; AppImage updates
-replace the launch file and retain a recovery copy. macOS baseline changes use a new
-DMG and the user's chosen signing workflow. Fedora installations download an RPM
+replace the launch file and retain a recovery copy. macOS installations made with
+the included local installer reuse their signing identity for new DMGs; other
+installations open the DMG for manual installation. Fedora installations download an RPM
 and open the system package installer. See [release setup](releases.md).
 
 Pushes to `main` automatically update the client version: explicit version intent
@@ -163,6 +173,6 @@ Optional group-hosted synchronization, private client secrets and browser pairin
 ## License and participation
 
 Haunt-owned code in this repository is available under the
-[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/LICENSE). Bundled third-party assets retain their own
-notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/CONTRIBUTING.md) before submitting changes and
-[SECURITY.md](https://github.com/example-git/haunt-client/blob/c17faa71c193e16c01d9e0fb3d93a498693472f2/SECURITY.md) for private vulnerability reports.
+[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/LICENSE). Bundled third-party assets retain their own
+notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](https://github.com/example-git/haunt-client/blob/6c17f119bf6b005e3c0ebe945130e4c423192223/SECURITY.md) for private vulnerability reports.
