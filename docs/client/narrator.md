@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/3779265b358164061c8273c77a4d0359723e8871/docs/narrator.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/bbca72b6927d2d6aefc67c96200121b1b8fa5d72/docs/narrator.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Text to speech
 

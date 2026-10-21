@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/bab2cee3feb067dc0ddf82b317c0ba38193cc854/docs/testing.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/db3612e917b44a430a6a9c01f68895184bba032f/docs/testing.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Testing and platform coverage
 
@@ -12,7 +12,7 @@ Evidence is retained as workflow artifacts for 14 days.
 The manual **Call endurance** workflow accepts 30–1800 observation seconds per
 transport, runs two browser peers sequentially over WebRTC and WebSocket, and
 saves audible-playback and decoded-video samples. See the client's
-[qualification guide](https://github.com/example-git/haunt-server/blob/bab2cee3feb067dc0ddf82b317c0ba38193cc854/client/docs/release-qualification.md) for its limits and
+[qualification guide](https://github.com/example-git/haunt-server/blob/db3612e917b44a430a6a9c01f68895184bba032f/client/docs/release-qualification.md) for its limits and
 the physical-device/automatic-upgrade matrix. Independent encryption review has
 a separate [review brief and source-packet command](security-review.md).
 
