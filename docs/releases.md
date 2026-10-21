@@ -103,9 +103,9 @@ has been published.
 The hub’s `Build and publish optional sync` workflow runs real Go/browser protocol
 and SMTP transport checks, builds both native Linux targets, and verifies the
 production TLS container through encrypted upload and restart restore. It publishes
-the exact checked archives as `ghcr.io/example-git/haunt:sync-VERSION` and
-`sync-latest`. These tags share the project package and do not replace the
-community container’s `latest` tag.
+the exact checked images as `ghcr.io/example-git/haunt-sync:VERSION` and
+`ghcr.io/example-git/haunt-sync:latest`. The package is linked to the Haunt Sync
+repository and supports Linux amd64 and arm64.
 
 For releases including sync, pass `--sync-run RUN_ID` to `scripts/publish-release.py`
 after that workflow succeeds. Assembly requires its source revision to match the

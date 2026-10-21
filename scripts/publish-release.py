@@ -176,10 +176,8 @@ def main():
             if header[:6]!=b"\x7fELF\x02\x01" or struct.unpack_from("<H",header,18)[0]!=machine:
                 raise ValueError("Sync binary architecture mismatch")
             shutil.copyfile(binary,output/binary.name)
-        # Sign-in and pairing are owned by the desktop/community clients. The
-        # current sync service has no separately published sign-in website.
         provenance["sync"]={"revision":revision,"source_revision":run("git","-C","sync","rev-parse","HEAD"),
-                            "workflow_run":args.sync_run,"image":f"ghcr.io/{REPOSITORY}:sync-{args.version}"}
+                            "workflow_run":args.sync_run,"image":f"ghcr.io/example-git/haunt-sync:{args.version}"}
     (output / "haunt-release.json").write_text(json.dumps(provenance, indent=2) + "\n")
     files = sorted(path for path in output.iterdir() if path.is_file() and path.name not in {"SHA256SUMS", "release-notes.md"})
     (output / "SHA256SUMS").write_text("".join(f"{sha(path)}  {path.name}\n" for path in files))

@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/components
+        id: components
       - name: Validate single-container tunnel deployment configuration
         env:
           HAUNT_SYNC_HOST: nexus.example.test
@@ -56,6 +57,7 @@ jobs:
   build:
     outputs:
       version: ${{ steps.version.outputs.value }}
+      sync: ${{ steps.components.outputs.sync }}
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/components
+        id: components
       - uses: actions/setup-go@v6
         with:
           go-version-file: sync/go.mod
@@ -117,8 +120,9 @@ jobs:
             VERSION=${{ steps.version.outputs.value }}
             HAUNT_WEB_CLIENT_ORIGIN=${{ steps.hosted_client.outputs.origin }}
           labels: |
-            org.opencontainers.image.source=https://github.com/example-git/haunt
-            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/example-git/haunt-sync
+            org.opencontainers.image.revision=${{ steps.components.outputs.sync }}
+            vg.xo.haunt.hub-revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.version.outputs.value }}
           cache-from: type=gha,scope=sync-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=sync-${{ matrix.arch }}
@@ -164,26 +168,28 @@ jobs:
       - name: Publish exact tested images
         env:
           VERSION: ${{ needs.build.outputs.version }}
-          REVISION: ${{ github.sha }}
+          REVISION: ${{ needs.build.outputs.sync }}
+          HUB_REVISION: ${{ github.sha }}
         run: |
-          image=ghcr.io/example-git/haunt
+          image=ghcr.io/example-git/haunt-sync
           sources=()
           for arch in amd64 arm64; do
             directory="release/haunt-sync-linux-$arch"
             (cd "$directory" && sha256sum --check SHA256SUMS)
             gzip -dc "$directory/haunt-sync-linux-$arch.docker.tar.gz" | docker load
             test "$(docker image inspect haunt-sync:check --format '{{.Architecture}}')" = "$arch"
-            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.source"}}')" = https://github.com/example-git/haunt
+            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.source"}}')" = https://github.com/example-git/haunt-sync
             test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$REVISION"
             test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.version"}}')" = "$VERSION"
-            target="$image:sync-build-$REVISION-$arch"
+            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "vg.xo.haunt.hub-revision"}}')" = "$HUB_REVISION"
+            target="$image:build-$HUB_REVISION-$arch"
             docker tag haunt-sync:check "$target"
             docker push "$target"
             sources+=("$(docker image inspect "$target" --format '{{index .RepoDigests 0}}')")
           done
-          docker buildx imagetools create -t "$image:sync-$VERSION" "${sources[@]}"
-          docker buildx imagetools create -t "$image:sync-latest" "${sources[@]}"
-          docker buildx imagetools inspect "$image:sync-$VERSION" --raw > version.json
-          docker buildx imagetools inspect "$image:sync-latest" --raw > latest.json
+          docker buildx imagetools create --annotation "index:org.opencontainers.image.source=https://github.com/example-git/haunt-sync" --annotation "index:org.opencontainers.image.description=Haunt encrypted sync service" -t "$image:$VERSION" "${sources[@]}"
+          docker buildx imagetools create --annotation "index:org.opencontainers.image.source=https://github.com/example-git/haunt-sync" --annotation "index:org.opencontainers.image.description=Haunt encrypted sync service" -t "$image:latest" "${sources[@]}"
+          docker buildx imagetools inspect "$image:$VERSION" --raw > version.json
+          docker buildx imagetools inspect "$image:latest" --raw > latest.json
           cmp version.json latest.json
           python3 -c 'import json; d=json.load(open("version.json")); assert {(x["platform"]["os"],x["platform"]["architecture"]) for x in d["manifests"]}=={("linux","amd64"),("linux","arm64")}'
