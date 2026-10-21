@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/8e3dadde19fff93256ef4af7fdb4be8f88d6b069/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/2366356c91c1c678e32a49f640a356fc478f43ed/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Release qualification
 

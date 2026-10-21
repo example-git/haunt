@@ -1,9 +1,9 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/8e3dadde19fff93256ef4af7fdb4be8f88d6b069/docs/sync.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/2366356c91c1c678e32a49f640a356fc478f43ed/docs/sync.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Optional encrypted sync
 
-Choose your group's independent Haunt Sync instance in the desktop sign-in screen
-or Encrypted sync settings. Ordinary community accounts work without it. The sync
+Choose your group's independent Haunt Sync instance in the desktop or standalone
+web sign-in screen, or in Encrypted sync settings. Ordinary community accounts work without it. The sync
 instance stores current encrypted snapshots, not an archival backup; losing it
 leaves your local working settings and sign-ins available.
 
@@ -19,8 +19,9 @@ start a browser pairing request, and copy it to **Approve browser access** in
 unlocked desktop sync settings. Check the displayed server, instance and matching
 fingerprint before approving. Copy the encrypted approval back to the browser.
 Its private key stays there, and the approval cannot be used by another browser.
-Neither global secret is entered into a hosted sign-in page. Requests expire in
-five minutes; established sessions stay signed in until logout or revocation.
+Global secrets are entered only in a trusted full-account client, not a
+community-hosted page. Requests expire in five minutes; established sessions stay
+signed in until logout or revocation.
 
 Changing either secret re-encrypts the current snapshots and replaces the recovery
 key. Authentication, snapshots and recovery data change together only when every

@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/8e800042fe540c1969ec5b99cc639dd3b5ab3807/docs/roadmap.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/fca9c63594d9839aedef332ea4e8a7928f59f770/docs/roadmap.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Project direction
 

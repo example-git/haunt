@@ -23,6 +23,10 @@ jobs:
           HAUNT_SYNC_DB_PASSWORD: synthetic-compose-check
         run: |
           docker compose -f sync/compose.yml config --quiet
+      - name: Read hosted client origin
+        run: |
+          origin=$(python3 -c 'import json,re; value=json.load(open("client/web-deployment.json")); assert value["version"] == 1; origin=value["origin"]; assert re.fullmatch(r"https://[a-z0-9][a-z0-9.-]*", origin); print(origin)')
+          echo "HAUNT_WEB_CLIENT_ORIGIN=$origin" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v6
         with:
           go-version-file: sync/go.mod
@@ -48,7 +52,7 @@ jobs:
         env:
           HAUNT_SYNC_TEST_DATABASE_URL: postgres://haunt_sync_iteration:synthetic-ci-fixture@127.0.0.1:32768/haunt_sync_iteration?sslmode=disable
           HAUNT_SYNC_CLIENT_CHECKOUT: ${{ github.workspace }}/client
-        run: go test -race ./... -count=1 -timeout 180s
+        run: go test -race -ldflags="-X github.com/example-git/haunt-sync/internal/service.HostedClientOrigin=$HAUNT_WEB_CLIENT_ORIGIN" ./... -count=1 -timeout 180s
   build:
     outputs:
       version: ${{ steps.version.outputs.value }}
@@ -76,6 +80,12 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - run: npm ci
         working-directory: client
+      - name: Read hosted client origin
+        id: hosted_client
+        run: |
+          origin=$(python3 -c 'import json,re; value=json.load(open("client/web-deployment.json")); assert value["version"] == 1; origin=value["origin"]; assert re.fullmatch(r"https://[a-z0-9][a-z0-9.-]*", origin); print(origin)')
+          echo "HAUNT_WEB_CLIENT_ORIGIN=$origin" >> "$GITHUB_ENV"
+          echo "origin=$origin" >> "$GITHUB_OUTPUT"
       - id: version
         env:
           REQUESTED: ${{ inputs.version }}
@@ -94,7 +104,7 @@ jobs:
           ARCH: ${{ matrix.arch }}
         run: |
           mkdir -p ../release
-          CGO_ENABLED=0 GOOS=linux GOARCH="$ARCH" go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o "../release/haunt-sync-linux-$ARCH" ./cmd/haunt-sync
+          CGO_ENABLED=0 GOOS=linux GOARCH="$ARCH" go build -trimpath -ldflags="-s -w -X main.version=$VERSION -X github.com/example-git/haunt-sync/internal/service.HostedClientOrigin=$HAUNT_WEB_CLIENT_ORIGIN" -o "../release/haunt-sync-linux-$ARCH" ./cmd/haunt-sync
           "../release/haunt-sync-linux-$ARCH" --version
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
@@ -103,7 +113,9 @@ jobs:
           load: true
           platforms: linux/${{ matrix.arch }}
           tags: haunt-sync:check
-          build-args: VERSION=${{ steps.version.outputs.value }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.value }}
+            HAUNT_WEB_CLIENT_ORIGIN=${{ steps.hosted_client.outputs.origin }}
           labels: |
             org.opencontainers.image.source=https://github.com/example-git/haunt
             org.opencontainers.image.revision=${{ github.sha }}

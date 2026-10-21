@@ -29,7 +29,7 @@ the instance cannot recover data that no client still retains.
 
 ## Sign-in, synchronization and browser pairing
 
-The desktop sign-in screen and client settings offer a separate sync account.
+Desktop and trusted standalone web clients offer a separate sync account.
 The master password authenticates through OPAQUE. The password and private keyword
 derive the root and unlock snapshots entirely in client code. After sign-in the client restores saved server addresses,
 usernames, credentials and preferences, then periodically encrypts and uploads
@@ -82,8 +82,8 @@ email recovery also require that full resync.
 
 ## Code trust
 
-Both secrets and all payload encryption belong to installed client code trusted
-by the user. A sync host supplies authentication records and encrypted storage,
+Both secrets and all payload encryption belong to client code trusted by the
+user. The dedicated web client's hosting origin supplies that code. A sync host supplies authentication records and encrypted storage,
 not an authentication webpage. Browser pairing carries only public keys and a
 single-server encrypted approval package. A community host can modify its page
 and read its own approved scope, but cannot receive the global secrets through
