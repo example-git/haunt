@@ -60,13 +60,16 @@ def main():
                 time.sleep(.5)
             else: raise RuntimeError("Quick bundle did not initialize")
             issuer=match.group(1)
+            last_error="No health response received"
             for _ in range(100):
                 try:
                     with urllib.request.urlopen(issuer+"/healthz",timeout=5) as response:
                         if response.status==200: return issuer
-                except Exception: pass
+                        last_error=f"HTTP {response.status}"
+                except Exception as error:
+                    last_error=f"{type(error).__name__}: {error}"
                 time.sleep(.25)
-            raise RuntimeError("Full bundle is not reachable through public HTTPS")
+            raise RuntimeError(f"Full bundle is not reachable through public HTTPS at {issuer}: {last_error}\nContainer logs:\n{logs(name)[len(previous):]}")
         issuer=ready(); print("Disposable full-bundle URL:",issuer,flush=True)
         # A named-mode directory must survive both temporary launches intact.
         marker="from pathlib import Path; p=Path('/data/postgres'); p.mkdir(exist_ok=True); (p/'named-data-sentinel').write_text('preserve named data')"
