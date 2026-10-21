@@ -43,7 +43,7 @@ jobs:
         run: |
           docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
           for attempt in $(seq 1 40); do
-            if docker exec chatxo-identity-check pg_isready -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
+            if docker exec chatxo-identity-check pg_isready -h 127.0.0.1 -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
             sleep 1
           done
           test "$(docker inspect chatxo-identity-check --format '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostIp}}')" = 127.0.0.1
@@ -130,7 +130,7 @@ jobs:
         run: |
           docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
           for attempt in $(seq 1 40); do
-            if docker exec chatxo-identity-check pg_isready -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
+            if docker exec chatxo-identity-check pg_isready -h 127.0.0.1 -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
             sleep 1
           done
       - name: Verify standalone TLS binary path and encrypted restart restore
