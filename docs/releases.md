@@ -2,7 +2,6 @@
 
 The hub repository is the distribution home. Component repositories remain the
 source of builds and tests; hub submodule pins identify the exact combination.
-No historical release or existing client's updater source is moved automatically.
 Repositories, coordinated downloads and release packages are public; signing and
 deployment credentials remain private.
 
@@ -35,11 +34,6 @@ URLs to the corresponding hub release while retaining their verified hashes,
 sizes, version and runtime contract. Set `HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt`
 only once the coordinated release actually includes a valid `haunt-app.json` and both
 archives. A contents-read token file is needed only for a private operator mirror.
-
-Do not point an updater at an empty release hub. The current component releases
-and Oracle distribution remain operational while the hub gains coordinated
-releases. The central release includes both application archives and their matching
-manifest and is downloadable without repository credentials.
 
 ## Container images
 
@@ -89,8 +83,8 @@ git push origin v0.4.5
 python3 scripts/publish-release.py 0.4.5 --publish
 ```
 
-Run this with the operator's existing authenticated `gh` account. Release downloads
-are retained in ignored `release/` and checked again on each run. Signing keys
+Authenticate `gh` with access to read component artifacts and publish hub releases.
+Release downloads are retained in ignored `release/` and checked again on each run. Signing keys
 remain in the component repository, and no broad personal credential is copied
 into hub CI. A published coordinated release is never silently overwritten. The tag
 also starts the central native container workflow. Source component releases
@@ -118,6 +112,4 @@ after that workflow succeeds. Assembly requires its source revision to match the
 hub release tag, checks artifact hashes and binary architectures, and includes
 `haunt-sync-linux-amd64` and `haunt-sync-linux-arm64` in the central download set
 and release-wide checksum file. Provenance records both the workflow's hub
-revision and the pinned sync source revision. Sync sign-in belongs to the desktop
-client; community browsers use desktop-approved pairing. No separate sign-in
-website or publisher archive is needed.
+revision and the pinned sync source revision.

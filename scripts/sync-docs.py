@@ -11,10 +11,6 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = {"server": "haunt-server", "client": "haunt-client", "audio-plugins/rnnoise": "haunt-audio-rnnoise"}
 LINK = re.compile(r"(!?\[[^\]]*\]\()([^\s)]+)(\))")
-PORT_NOTE = ("> **Prebuilt-container port mapping:** client and setup traffic enters bundled Nginx "
-             "on container TCP 80/443, mapped to host TCP 80/443 by default. The host mappings "
-             "are configurable; the supplied Compose file keeps the `127.0.0.1:8080` Haunt "
-             "backend unpublished.\n\n")
 
 
 def main():
@@ -41,41 +37,26 @@ def main():
         content = original
         if path.suffix == ".md":
             text = original.decode()
-            if component == "server" and "Prebuilt-container port" not in text:
-                anchors = {
-                    Path("README.md"): "## Run\n",
-                    Path("docs/container.md"): "# One-container installation\n",
-                    Path("docs/first-run.md"): "# First-time setup\n",
-                    Path("docs/operations.md"): "# Linux deployment, maintenance and recovery\n",
-                }
-                if relative in anchors:
-                    anchor = anchors[relative]
-                    text = text.replace(anchor, anchor + "\n" + PORT_NOTE, 1)
             if component == "server" and relative == Path("docs/container.md"):
                 text = text.replace("HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt-server",
                                     "HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt")
                 text = text.replace("The `All-in-one container` GitHub workflow", "The hub's `Publish coordinated container` GitHub workflow")
                 text = "For the published image and first-login instructions, use the [central installation guide](../installation.md). The detailed source-build and runtime guide follows.\n\n" + text
-            # Central toolchain guidance reflects actual manifests, correcting
-            # the source guide's stale compiler paragraph without changing pins.
-            if component == "client" and relative == Path("docs/releases.md"):
-                package = json.loads((base / "package.json").read_text())
-                generator = json.loads((base / "scripts/api-generator/package.json").read_text())
-                compiler = package["devDependencies"]["typescript"]
-                library = generator["dependencies"]["json-schema-to-typescript"]
-                paragraph = (f"The application uses TypeScript {compiler}. API generation uses the independently locked "
-                             f"`json-schema-to-typescript` {library}; it has no TypeScript compiler dependency. "
-                             "Keep libraries current and adapt generation when APIs change. "
-                             "Run `npm ls`, `npm ls --prefix scripts/api-generator`, `npm run generate:check` and the client build after updates.\n")
-                text = re.sub(r"(?<=## Dependency toolchains\n)\n.*?(?=\nThe native media publisher)", "\n" + paragraph, text, flags=re.S)
             def link(match):
                 target = match[2]
                 if target.startswith(("#", "/", "http:", "https:", "mailto:", "data:")):
                     return match[0]
                 target_path, separator, anchor = target.partition("#")
                 resolved = (path.parent / target_path).resolve()
+                shared_assets = {
+                    "haunt-wordmark.png": ROOT / "assets/haunt-wordmark.png",
+                    "09-voice-pip.png": ROOT / "assets/demo/09-voice-pip.png",
+                    "07-audio-plugin.png": ROOT / "assets/demo/07-audio-plugin.png",
+                }
                 if resolved in mapping:
                     target = os.path.relpath(mapping[resolved], destination.parent)
+                elif resolved.parent == base / "assets" and resolved.name in shared_assets:
+                    target = os.path.relpath(shared_assets[resolved.name], destination.parent)
                 else:
                     if not resolved.is_relative_to(base):
                         return match[0]

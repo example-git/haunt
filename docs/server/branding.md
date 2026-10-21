@@ -1,14 +1,12 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/branding.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/branding.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt branding
 
-The product name is **Haunt**. The owner-supplied brand kit is preserved under
-`client/branding/haunt/`, including its source artwork, specification, original
-tokens and Android exports. The supplied launcher artwork is preserved. A separate white SVG owl, requested
-by the owner for the notification button, is derived from that artwork; it does
-not replace the original kit exports. `client/scripts/check-brand-assets.mjs` verifies the source
-logo and 27 installed image exports against the kit's supplied hashes on every
-client build.
+The product name is **Haunt**. The brand kit at `client/branding/haunt/` contains
+source artwork, the visual specification, tokens and platform exports. The
+notification button uses a white SVG derived from the owl artwork.
+`client/scripts/check-brand-assets.mjs` verifies the source logo and installed
+image exports against the kit's asset manifest on client builds.
 
 The client uses neutral charcoal surfaces (#161616, #202020, #292929, #333333),
 with equal RGB channels and no warm or cool tint. Orange remains the default
@@ -16,7 +14,7 @@ action accent and can be replaced in Appearance. The Inter-first font stack
 uses semibold names and regular supporting text. Status colors retain their meanings: speaking and
 connection indicators stay green, and audio meters retain green/orange/red
 levels. Uploaded server/user artwork, transparent backgrounds, custom server
-names and configured accent colors remain user content. No slogans were added.
+names and configured accent colors remain user content.
 
 ## Asset locations
 
@@ -30,7 +28,7 @@ names and configured accent colors remain user content. No slogans were added.
 | Windows, macOS and Linux launcher icons | `client/static/` |
 
 The web manifest is served beneath `/brand/`; its start URL, ID and scope resolve
-to the application root. Unread favicon badges use the approved owl with a small
+to the application root. Unread favicon badges use the owl with a small
 orange indicator. The decoded logo is cached once, and asynchronous badge work
 is invalidated when its subscription is disposed.
 

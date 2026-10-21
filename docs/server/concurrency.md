@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/concurrency.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/concurrency.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Concurrency and resource ownership
 
@@ -6,7 +6,7 @@ Concurrency is implemented across HTTP requests, device sessions, rooms and pool
 
 | State/work | Owner and bound |
 | --- | --- |
-| Configuration | Immutable after startup; changes require restart |
+| Configuration | Startup-only host settings; revisioned runtime policy is persisted and published without restart |
 | HTTP | Request context; 128 active ordinary handlers; health and bounded WebSocket admission are separate |
 | PostgreSQL | `pgxpool`, default 16 connections; transaction-local connection ownership |
 | Passwords | Nonblocking semaphore, default four Argon2id jobs at 64 MiB/job |
@@ -15,7 +15,7 @@ Concurrency is implemented across HTTP requests, device sessions, rooms and pool
 | Text/attachment accounting | Storage-row lock first, then conversation/attachment rows; no global process database mutex |
 | Event sockets | 512 total, four/session; one writer; eight input commands; outbound 128 frames and 1 MiB |
 | Event replay | At most 100 events and 768 KiB per snapshot batch; retained log ≤1 hour/10k rows/¼ text budget |
-| Upload/probe | Two concurrent jobs; actual stream limit, 60-second receive context, five-second probe and bounded output |
+| Upload/probe | Two concurrent jobs; actual stream limit, five-minute read deadline, nine-minute completion context, five-second probe and bounded output |
 | Files | One directory owner via `flock`; filesystem work outside accounting transactions |
 | SFU registry/rooms | Registry and room locks protect state only; media/network/database operations occur after unlocking |
 | SFU receivers | 128 packets per independent queue; full queues drop packets and increment metrics |

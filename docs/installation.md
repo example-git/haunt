@@ -1,11 +1,8 @@
 # Install and sign in
 
-Haunt runs on the machine where you start it. There is no automatic public
-hosting account or fixed default website. Set `HAUNT_PUBLIC_URL` to your own
-hostname. The container publishes TCP 80/443 and UDP 50000–50100 by default;
-Nginx serves the web client and API, and PostgreSQL stays private inside it.
-`ghcr.io/example-git/haunt` hosts the downloadable container image, not a running
-community. Independent communities keep separate accounts and data.
+Run Haunt on your own host and set `HAUNT_PUBLIC_URL` to its public hostname.
+The container image is distributed through `ghcr.io/example-git/haunt`. Each
+community has separate accounts and data.
 
 > **Prebuilt-container port boundary:** forward client and setup traffic to TCP
 > 80/443 on the host running Compose by default. Those host ports map to bundled
@@ -38,10 +35,9 @@ Set your real `HAUNT_PUBLIC_URL`, `HAUNT_MEDIA_PUBLIC_IP` in
 the default host mappings—or the ports selected with `HAUNT_HTTP_PORT` and
 `HAUNT_HTTPS_PORT`—forward the documented UDP range, and point DNS at that host.
 For automatic HTTPS, the public hostname and mapped HTTP port must reach bundled
-Nginx in this container. The example
-hostname and IP are placeholders, not a hosted installation.
+Nginx in this container. Replace the example hostname and IP with your own.
 
-The published image is intended to be anonymously pullable from GHCR. Then:
+Pull and start the image:
 
 ```sh
 docker compose pull
@@ -60,8 +56,7 @@ accounts, messages and settings.
 On a fresh volume, open the **private setup link printed in the startup log**.
 The wizard uses your server’s normal public address and port. Confirm the
 connection details, choose the server name and policies, then set the owner
-username and password. The container provides a private database automatically;
-there is no generated password to retrieve or app-pairing command to run.
+username and password. The container provides a private database automatically.
 
 Select **Open Haunt** when setup finishes and sign in with the credentials you
 chose. In the desktop client, use `username@your-server-hostname`. Setup is disabled

@@ -1,22 +1,26 @@
+![Haunt](../assets/haunt-wordmark.png)
+
 # Server extensions
 
-This directory is the home for separately maintained server-extension projects,
-distinct from the microphone processors in `audio-plugins/`.
+Standalone executable packages extend Haunt's server and contribute settings and
+voices dynamically to browser and desktop clients. They are separate from the
+Wasm microphone processors in `audio-plugins/`.
 
-- [TikTok TTS](tiktok-tts-plugin/): direct TikTok speech provider for Haunt's
-  server-side relay, with server-owner configuration and testing.
+- [TikTok TTS](tiktok-tts-plugin/): a speech extension with provider implementation,
+  configuration fields, grouped voice catalog, package builder and protocol tests.
 
-The TikTok project is maintained in a separate repository and pinned here as a
-Git submodule. Initialize it with:
+The projects are maintained in separate repositories and pinned here as Git
+submodules. Initialize the TikTok source with:
 
 ```sh
 git submodule update --init extensions/tiktok-tts-plugin
 ```
 
-Publish plugin commits to their remote before sharing an updated Haunt pin so
-other checkouts can fetch the referenced revision. The server currently bundles
-its own adapter; this source submodule is not yet a Go module dependency.
+Follow the extension's build instructions, install its output under the server's
+`server-extensions/packages/` data directory, and reload installed extensions in
+Server settings. Packages can be updated independently of the server binary.
 
-Haunt's server owns authentication, encrypted credential persistence, extension
-configuration, limits and caching. Clients own playback and personal TTS settings.
-No provider credentials belong in an extension repository or client preferences.
+The [server extension guide](../server/docs/server-extensions.md) documents package
+metadata, dynamic menus, the execution protocol and host APIs. The server manages
+authentication, encrypted configuration, limits and caching. Clients manage
+personal speech preferences and playback.

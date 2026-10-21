@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/server-menus.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/server-menus.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server-provided menus
 
@@ -27,8 +27,7 @@ Changing runtime configuration carries its revision to prevent lost edits.
 `internal/httpapi/menus.go` is the server-side definition registry. Add a page
 there and an independently authenticated endpoint to expand settings without
 changing the client. The generated OpenAPI documentation describes the manifest.
-The live Limits & access form and channel deletion already use this protocol.
-Complex builtin editors and older servers retain their existing behavior.
+The Limits & access form and channel deletion use this protocol.
 
 The renderer never evaluates server strings, HTML or expressions. Paths must be
 literal same-server `/api/v1/` resources, with no URL escapes, traversal, query

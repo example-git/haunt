@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/c45ccabf10bc907db2e64b2934b2fe2fa30244b0/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/8e3dadde19fff93256ef4af7fdb4be8f88d6b069/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop releases and updates
 
@@ -49,8 +49,8 @@ before making another local commit, tagging a release, or updating the server's
 client submodule reference. In a server checkout, pull inside `client/`, then
 commit that updated submodule reference in the server repository. If a job fails,
 rerun it; the manual workflow also accepts the original push's full before/after
-SHAs for recovery. Automatic versioning does not publish installers: release
-tags and manual release builds retain their existing behavior.
+SHAs for recovery. Automatic versioning updates source versions; release builds
+produce installers.
 
 ## Release setup
 
@@ -146,20 +146,12 @@ not covered by the ASAR startup rollback; retain the previous installer or recov
 AppImage. The macOS local installer retains a previous bundle and restores it if
 replacement fails. Native platform installation and signing require target-OS testing.
 
-## Desktop status icons
-
-The macOS menu bar uses a monochrome template owl and an unread count (or a dot
-for uncounted unread messages); the Dock uses its native badge. Windows uses a
-tray icon and taskbar overlay. Linux uses a tray icon and a launcher count where
-the desktop supports it. The tray menu opens/hides Haunt and offers **Quit Haunt**.
-Closing the main window keeps the renderer and active calls running in the tray;
-Quit exits, including during an updater restart. If no tray can be created,
-closing the main window exits normally so there is no inaccessible hidden app.
-Native tray support depends on the desktop environment.
-
 ## Dependency toolchains
 
-The application uses TypeScript 7.0.2. API generation uses the independently locked `json-schema-to-typescript` 16.0.0; it has no TypeScript compiler dependency. Keep libraries current and adapt generation when APIs change. Run `npm ls`, `npm ls --prefix scripts/api-generator`, `npm run generate:check` and the client build after updates.
+The application uses TypeScript 7.0.2. API generation uses
+`json-schema-to-typescript` 16.0.0 under `scripts/api-generator`, with its own
+lockfile and no TypeScript compiler dependency. The root postinstall step installs
+the generator. `npm run generate:check` checks the generated client contracts.
 
 The native media publisher uses Go 1.26 or newer; rebuild it with
 `npm run build:native-media` after changing its Go dependencies. SwiftCaptureWorker

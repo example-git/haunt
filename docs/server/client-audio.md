@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/client-audio.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/client-audio.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Client audio
 
@@ -41,7 +41,7 @@ ceiling, not a guaranteed network bitrate; WebRTC can adapt to congestion.
 Microphone capture is mono; camera and screen audio request stereo where the
 source supplies it. The WebSocket PCM adapter preserves the two source channels.
 The server advertises full-band stereo support and forwards encoded media without
-transcoding. Both client and server updates are needed for the full negotiation.
+transcoding.
 
 ### Sample rates and device conversion
 

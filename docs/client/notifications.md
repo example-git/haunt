@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/c45ccabf10bc907db2e64b2934b2fe2fa30244b0/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/8e3dadde19fff93256ef4af7fdb4be8f88d6b069/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Notifications
 
@@ -38,15 +38,23 @@ runtime share `com.exampleuser.haunt.desktop`, including Wayland app identity an
 X11 window grouping. Linux native alerts require the system `libnotify` library
 (`libnotify4` on Ubuntu/Debian) and a running desktop notification service.
 A desktop without launcher badges still has the tray count.
-The desktop identity change requires a full installer update; the updater detects
-the changed launcher fingerprint and offers that installer. Existing profiles keep
-their current location.
+Changes to the launcher or application identity require a full installer update.
+The updater selects that installer by runtime fingerprint and preserves profiles.
 
 Native notifications replace older alerts from the same conversation without
 suppressing simultaneous alerts from different conversations. The OS controls
-notification lifetime; Haunt no longer forcibly dismisses them after 15 seconds.
+notification lifetime.
 Clicking restores the window and opens the originating server/conversation.
-Keep Haunt running and connected; closing the window to its tray is supported.
+Keep Haunt running and connected to receive notifications.
+
+## Window and tray behavior
+
+The tray menu opens or hides Haunt and offers **Quit Haunt**. Closing the main
+window keeps the client and active calls running when a tray is available;
+**Quit Haunt** exits the application. If no tray can be created, closing the main
+window exits. Tray support depends on the desktop environment.
+
+## Verification
 
 Native Actions rehearsals use the packaged app, actual OS notifications and
 desktop captures, real popup clicks, unread transitions and selected notification

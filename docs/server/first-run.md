@@ -1,9 +1,6 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/first-run.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/first-run.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # First-time setup
-
-> **Prebuilt-container port mapping:** client and setup traffic enters bundled Nginx on container TCP 80/443, mapped to host TCP 80/443 by default. The host mappings are configurable; the supplied Compose file keeps the `127.0.0.1:8080` Haunt backend unpublished.
-
 
 The standalone server and all-in-one container use a one-time browser wizard
 on their normal client/API listener. There is no additional setup port.

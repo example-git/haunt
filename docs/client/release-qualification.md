@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/c45ccabf10bc907db2e64b2934b2fe2fa30244b0/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/8e3dadde19fff93256ef4af7fdb4be8f88d6b069/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Release qualification
 
@@ -52,9 +52,9 @@ capacity, physical capture quality, congested-network behavior or day-long stabi
 
 ## Native device and automatic-update qualification
 
-Use dedicated accounts and a disposable profile on each intended OS. Retain
-original/filtered clips for audio comparisons and process any corpus serially at
-low priority. Keep echo cancellation disabled and microphone monitoring explicit.
+Use dedicated accounts and a disposable profile on each intended OS. Compare
+original and filtered clips for audio checks. Keep echo cancellation disabled and
+microphone monitoring explicit.
 
 | Case | Required observation |
 | --- | --- |

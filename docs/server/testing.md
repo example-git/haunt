@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/docs/testing.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/docs/testing.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Testing and platform coverage
 
@@ -12,17 +12,17 @@ Evidence is retained as workflow artifacts for 14 days.
 The manual **Call endurance** workflow accepts 30–1800 observation seconds per
 transport, runs two browser peers sequentially over WebRTC and WebSocket, and
 saves audible-playback and decoded-video samples. See the client's
-[qualification guide](https://github.com/example-git/haunt-server/blob/125758f689d0cbc01b1b883227abdecf1ce74d9a/client/docs/release-qualification.md) for its limits and
+[qualification guide](https://github.com/example-git/haunt-server/blob/4e3e92d867854dc8ac4bb8064431e143db0fcab2/client/docs/release-qualification.md) for its limits and
 the physical-device/automatic-upgrade matrix. Independent encryption review has
 a separate [review brief and source-packet command](security-review.md).
 
-After deploying an exact release, compare both public hostnames with its extracted
-`web/` directory and the existing installation ID:
+After deploying a release, compare its public hostname with the extracted
+`web/` directory and the installation ID. Repeat `--origin` for configured aliases:
 
 ```sh
-python3 scripts/check-deployment.py --origin https://haunt.xo.vg \
-  --origin https://chat-test.xo.vg --web RELEASE/web \
-  --instance EXISTING-INSTALLATION-ID --output var/deployment-check.json
+python3 scripts/check-deployment.py --origin https://chat.example.com \
+  --web /path/to/release/web --instance EXISTING-INSTALLATION-ID \
+  --output /path/to/deployment-check.json
 ```
 
 This requires live health/readiness, the preserved installation identity, the

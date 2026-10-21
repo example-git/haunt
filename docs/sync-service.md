@@ -1,6 +1,7 @@
-# Sync service implementation contract
+# Sync protocol and security boundaries
 
-This document records the requested behavior and security boundaries. The service is implemented and verified with isolated protocol, rendered client, SMTP transport and container restart checks. It is not a claim of a hosted or independently audited service.
+Haunt Sync stores encrypted settings and saved sign-ins for clients connected to
+an independently operated sync service.
 
 Sync is disabled until a user explicitly enables it. Ordinary community sign-in,
 local settings and the desktop client work without a sync account. No backup or
@@ -26,7 +27,7 @@ An unavailable service, failed authentication or missing snapshot cannot erase
 local settings. A new sync account starts from the client’s local copy. Losing
 the instance cannot recover data that no client still retains.
 
-## Outcome and executable path
+## Sign-in, synchronization and browser pairing
 
 The desktop sign-in screen and client settings offer a separate sync account.
 The master password authenticates through OPAQUE. The password and private keyword
@@ -40,8 +41,8 @@ action. Its private exchange and proof keys remain in that browser. A public-key
 request is copied to a signed-in desktop; the user checks the exact origin and
 fingerprint before approving. Desktop returns a scoped key wrapped to that
 browser. S256 PKCE and proof-bound redemption prevent another browser from using
-the approval. Neither a project sign-in site nor a master-password entry page is
-in this path. The web client never receives either secret or the complete root.
+the approval. The web client receives only its origin-scoped key, not the master
+password, private keyword or complete root.
 
 Password or keyword changes re-encrypt every current ciphertext on the client.
 The service verifies a signed complete migration and exact revisions under a
@@ -86,8 +87,8 @@ by the user. A sync host supplies authentication records and encrypted storage,
 not an authentication webpage. Browser pairing carries only public keys and a
 single-server encrypted approval package. A community host can modify its page
 and read its own approved scope, but cannot receive the global secrets through
-this flow. Malware or guessed secrets are outside an absolute guarantee; no
-claim of an independent audit is made without evidence.
+this flow. Compromised client code or guessed secrets can expose encrypted data.
+See the [security model](../sync/docs/security.md) for the threat boundaries.
 
 ## Required verification
 
@@ -98,7 +99,6 @@ revisions, indefinite session validity, logout/revocation, cross-account denial,
 PKCE mismatch/replay, redirect manipulation, origin forgery, key substitution,
 and web attempts to retrieve or decrypt another server's data. Verify the desktop
 and web UI in isolated demos, and test the container only in disposable storage.
-Passing unit tests alone does not establish the requested restore behavior.
 
 References: [OPAQUE](https://www.rfc-editor.org/rfc/rfc9807.html),
 [OAuth security](https://www.rfc-editor.org/rfc/rfc9700.html),

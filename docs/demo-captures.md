@@ -28,8 +28,8 @@ the [client development guide](server/client-development.md). The dedicated
 `chatxo-identity-check` PostgreSQL test container must be running on
 `127.0.0.1:32768`; the integration harness verifies its identity before connecting
 and creates its own disposable databases. Existing application databases are not
-used. The script cleans Go build and test caches when the capture finishes or
-fails.
+used. After the web build succeeds, the integration stage cleans Go build and
+test caches on completion or failure.
 
 Build the RNNoise package using its [development instructions](../audio-plugins/rnnoise/README.md).
 The default package path is `audio-plugins/rnnoise/dist/haunt-plugin.zip`. You can
@@ -40,13 +40,11 @@ python3 scripts/update-banner.py --server /path/to/haunt-server \
   --audio-plugin /path/to/haunt-plugin.zip --theme "Rose Slate"
 ```
 
-The default theme is Midnight, matching the original banner. Unknown theme names
+The default theme is Midnight. Unknown theme names
 fail instead of silently choosing another preset. Every run captures all 13
 presets for the gallery; the selected theme controls the three banner scenes.
-The script stops only the browser it launches with its own private profile.
 
 Inspect the generated banner before committing it. `assets/demo/banner.json`
 records the theme, source commit, whether the checkout had uncommitted changes,
 image dimensions, corner/gutter checks and SHA-256 checksums for each panel and
-the final PNG. A refresh changes screenshots only; commit and publish them through
-the normal repository workflow when a major UI change is ready.
+the final PNG.

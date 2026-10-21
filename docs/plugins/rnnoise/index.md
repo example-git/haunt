@@ -1,4 +1,6 @@
-> Documentation from the pinned [example-git/haunt-audio-rnnoise](https://github.com/example-git/haunt-audio-rnnoise/blob/317224e1040a4395f0fd65531a8c804257b28029/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-audio-rnnoise](https://github.com/example-git/haunt-audio-rnnoise/blob/2ef6b6ff33ef3f8d1a9f83130b2a45e378411bfa/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+
+![Haunt](../../../assets/haunt-wordmark.png)
 
 # RNNoise for Haunt
 
@@ -11,6 +13,8 @@ The package includes the full model and RNNoise Light, a smaller model for devic
 with less processing capacity. Suppression strength blends filtered audio with a
 20 ms delayed copy of the original, keeping both paths aligned. Speech probability
 is a diagnostic only; it does not gate or mute speech. There is no echo canceller.
+
+![RNNoise model and strength controls in Haunt](../../../assets/demo/07-audio-plugin.png)
 
 ## Install
 
@@ -42,32 +46,19 @@ ZIG=/path/to/zig python3 scripts/build.py
 node scripts/check.mjs /path/to/a-short-speech-clip.wav
 ```
 
-The build verifies independently pinned SHA-256 values for both the source archive
-and the official model archive. It extracts C source/headers without running
-upstream scripts. `upstream.lock.json` records the exact upstream commit, model
-hash and compiler version. Builds are serial per variant, run at low priority on
-Linux, and use at most two available CPUs. Training checkpoints and build caches
-are never included in the package or repository.
+The build writes `dist/haunt-plugin.zip`, metadata and checksums for installation
+from a pinned Git revision. Source and model versions are recorded in
+`upstream.lock.json`. See the [authoring guide](authoring.md) for the ABI,
+reproducible build details, and audio comparison checks.
 
-The output ZIP is intentionally committed in `dist/` for installation directly
-from an immutable Git revision. `dist/build.json` records every packaged file's
-size and SHA-256. Both packed and unpacked contents fit Haunt's 50 MiB limit. Each
-Wasm instance has fixed 32 MiB memory, 480-sample frames and no imported functions.
-Copyright/license notices accompany the ZIP and each Wasm binary.
-
-The check script saves original/filtered WAV clips and measurements under the
-ignored `test-results/` directory. With a local speech clip, it exercises clean
-speech, broadband noise and hum/clicks; without one, CI checks synthetic PCM.
-It tests bounded finite output, dry-path alignment, state reset, hashes and model
-initialization. The included models suppress environmental noise; they do not
-promise to isolate one speaker from other people talking.
+RNNoise suppresses environmental noise; it does not isolate one speaker from
+other people talking.
 
 ## License
 
 The adapter and build tooling use BSD-3-Clause. RNNoise and its official model
 source are supplied by Xiph.Org under the upstream distribution's license terms;
-see [THIRD-PARTY-NOTICES.txt](https://github.com/example-git/haunt-audio-rnnoise/blob/317224e1040a4395f0fd65531a8c804257b28029/THIRD-PARTY-NOTICES.txt) and [LICENSE](https://github.com/example-git/haunt-audio-rnnoise/blob/317224e1040a4395f0fd65531a8c804257b28029/LICENSE).
-No proprietary voice-processing implementation or model is included.
+see [THIRD-PARTY-NOTICES.txt](https://github.com/example-git/haunt-audio-rnnoise/blob/2ef6b6ff33ef3f8d1a9f83130b2a45e378411bfa/THIRD-PARTY-NOTICES.txt) and [LICENSE](https://github.com/example-git/haunt-audio-rnnoise/blob/2ef6b6ff33ef3f8d1a9f83130b2a45e378411bfa/LICENSE).
 
-See [CONTRIBUTING.md](https://github.com/example-git/haunt-audio-rnnoise/blob/317224e1040a4395f0fd65531a8c804257b28029/CONTRIBUTING.md) before submitting changes and
-[SECURITY.md](https://github.com/example-git/haunt-audio-rnnoise/blob/317224e1040a4395f0fd65531a8c804257b28029/SECURITY.md) for private vulnerability reports.
+See [CONTRIBUTING.md](https://github.com/example-git/haunt-audio-rnnoise/blob/2ef6b6ff33ef3f8d1a9f83130b2a45e378411bfa/CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](https://github.com/example-git/haunt-audio-rnnoise/blob/2ef6b6ff33ef3f8d1a9f83130b2a45e378411bfa/SECURITY.md) for private vulnerability reports.
