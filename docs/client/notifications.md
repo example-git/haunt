@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/bdf8a9a9b3ad2e0086cdaeb6ac287fe5ea8936c1/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/3779265b358164061c8273c77a4d0359723e8871/docs/notifications.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Notifications
 
