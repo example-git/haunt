@@ -61,7 +61,8 @@ def main():
             else: raise RuntimeError("Quick bundle did not initialize")
             issuer=match.group(1)
             last_error="No health response received"
-            for _ in range(100):
+            deadline=time.monotonic()+120
+            while time.monotonic()<deadline:
                 try:
                     with urllib.request.urlopen(issuer+"/healthz",timeout=5) as response:
                         if response.status==200: return issuer
