@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9de8a7a3d0cb58c85e3ca9fbf125f5138f5a37ab/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/94fe32cbab0f82512b956ccf5ebccfdc9393a4d6/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Client development reference
 
@@ -23,7 +23,7 @@ Outputs are `docs/openapi.json`, `docs/websocket.json` and `docs/endpoints.md`. 
 
 When adding a route, add its contract in `internal/httpapi/openapi_contracts.go`, use a shared request/response type, regenerate and run the relevant tests. Update WebSocket sequencing metadata when adding a command; OpenAPI cannot infer protocol state machines or binary framing from Go types alone.
 
-Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/9de8a7a3d0cb58c85e3ca9fbf125f5138f5a37ab/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
+Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/94fe32cbab0f82512b956ccf5ebccfdc9393a4d6/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
 
 `messages.replies` adds optional `reply_to_id` fields to message creation and returned messages. The target must be a retained, undeleted message in the same conversation when the reply is first committed. Keep the identifier when its target is later edited, deleted or pruned so clients can show a tombstone or unavailable-reference state; retries use the original request ID and reply target.
 

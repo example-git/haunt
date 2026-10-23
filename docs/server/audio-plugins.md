@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9de8a7a3d0cb58c85e3ca9fbf125f5138f5a37ab/docs/audio-plugins.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/94fe32cbab0f82512b956ccf5ebccfdc9393a4d6/docs/audio-plugins.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server audio plugins
 
