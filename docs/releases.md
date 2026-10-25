@@ -12,7 +12,7 @@ differ; record the source tags and commits in the coordinated release notes. Pub
 installers only after their component builds finish, and make a draft release
 before promoting it. The intended asset set is:
 
-- Windows x64 installer, Linux x64/arm64 AppImages and macOS arm64 DMG.
+- Windows x64 installer, Linux x64/arm64 AppImages and RPMs, and macOS arm64 DMG.
 - The small desktop ASAR payloads and their **unchanged signed** `haunt-updates.json`.
 - Linux amd64/arm64 server binaries, with the web client embedded.
 - `haunt-app-linux-*.tar.gz` and `haunt-app.json` for container application updates.

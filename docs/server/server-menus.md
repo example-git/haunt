@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/f7d0d2b15a4839d48ec31b24ecc5d33d463ecfb1/docs/server-menus.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/f793c5d6bbc269cef2ddda85b3a0b07b7286d647/docs/server-menus.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server-provided menus
 
