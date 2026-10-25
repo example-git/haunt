@@ -2,61 +2,61 @@
   "docs/client/appearance.md": {
     "path": "docs/appearance.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "b90946c2051520b852fb8169232a22354afffa2a1d4d8d49765ef28f6afb8ef0"
   },
   "docs/client/audio-plugin-authoring.md": {
     "path": "docs/audio-plugin-authoring.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "5a655d8b76450855c5f4281af42e7e56c16594776c366c82a9201a485598aaa4"
   },
   "docs/client/calls.md": {
     "path": "docs/calls.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "8734dceb2af81a172ba58581c8808d4665796e797d4c93a961ecde4e2fcaf5de"
   },
   "docs/client/index.md": {
     "path": "README.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "eef630d61fa00230d335050cf1756bf7e9dae34bbc497d73f6c491a7ced6faa3"
   },
   "docs/client/narrator.md": {
     "path": "docs/narrator.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "84987f124e9a5aec3c4e0c461f8a68926b7d66f7a1571543c100a2003df193fc"
   },
   "docs/client/notifications.md": {
     "path": "docs/notifications.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "fdee2cdd3dbeb0cd06ac92ae223a34fb27eeee117fa9ba45e15cea6337201083"
   },
   "docs/client/release-qualification.md": {
     "path": "docs/release-qualification.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "3aa061bbc4160c19ea83392a92ef5c190953aca1388fab20662e8a44378815d4"
   },
   "docs/client/releases.md": {
     "path": "docs/releases.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "9c04347e52c6b67acc5fd5e6309c5c861cb3c50690260df9be6af22d0422fc3b"
   },
   "docs/client/sync.md": {
     "path": "docs/sync.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "fb972b0418d8b332e87226aeef56c032df6b32721265b6e5b46cf00a56dd7f4a"
   },
   "docs/client/web-hosting.md": {
     "path": "docs/web-hosting.md",
     "repository": "example-git/haunt-client",
-    "revision": "26f031ca7cd9a8be8e20ee9d925a8fddf44eb6fa",
+    "revision": "eb6323916068df147fa104766385fd513c16366e",
     "source_sha256": "f3dff21bdcf8f0d590a504f93f6b9933deca7ca9e3ccc8ee5240bf935209b80e"
   },
   "docs/plugins/rnnoise/authoring.md": {
@@ -74,163 +74,163 @@
   "docs/server/api.md": {
     "path": "docs/api.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "f7cf828c71837ef41909b2351525bb7f0b68afecb40c9bc53426bdfec304b6bb"
   },
   "docs/server/architecture.md": {
     "path": "docs/architecture.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "99d70040cf0e7b9aec90f9ed3dd470ea450ea14c1b2e26deee41bfd87d42396a"
   },
   "docs/server/audio-plugin-authoring.md": {
     "path": "docs/audio-plugin-authoring.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "c547dbd6749b0b0bdc95dc96c9e96d6fddc619be8b48d69a2ca51379433a905c"
   },
   "docs/server/audio-plugins.md": {
     "path": "docs/audio-plugins.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "12db276c9d5772a76fee989cc1a8430146f2a51d9ea59b3d3ec62c034504b4c7"
   },
   "docs/server/branding.md": {
     "path": "docs/branding.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "5e70b9a07c3df6912aae85ff5c1a90b6c95353ac89b00e18b0883f3ec900cfc4"
   },
   "docs/server/client-audio.md": {
     "path": "docs/client-audio.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "f325a7b48520e21cdaf08e7479ff3d9152a5a267d0fd555559278aa489a653e4"
   },
   "docs/server/client-development.md": {
     "path": "docs/client-development.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "604936f5ff01d6317677c5e5ef9d9f55f11f86f809792be9487af0a3657332ab"
   },
   "docs/server/client-native-capture.md": {
     "path": "docs/client-native-capture.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "11f8e864fa6ab8efed94a09b91a82cec7abed166a01400f460b1488b417c4f07"
   },
   "docs/server/client-updates.md": {
     "path": "docs/client-updates.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "35b7cac648f5353a6caead015ad3cfb505402842078ed7c83bcb8853b8dfab73"
   },
   "docs/server/concurrency.md": {
     "path": "docs/concurrency.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "fbffe71cfd37f3c1b587d2cb1f6bec78b57f4b5116179ccf11a605711d839b77"
   },
   "docs/server/container.md": {
     "path": "docs/container.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "12c73535c8c5b9ce3eac309b01d4058951d08a1e3243c5549b3b7a871a0d75a8"
   },
   "docs/server/dm-security.md": {
     "path": "docs/dm-security.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "84b980e1cda84b53ce0f08f6f589469dbf93637ea79578a3aa0489876607e22e"
   },
   "docs/server/endpoints.md": {
     "path": "docs/endpoints.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "806d5e4ea8fa961cf9f226fe6573690e32fb94dff9852c21486c6af29c9887b2"
   },
   "docs/server/first-run.md": {
     "path": "docs/first-run.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "76887079e06aa86813b10873b227315c8f2e1313c339334228dcd86f65be8856"
   },
   "docs/server/index.md": {
     "path": "README.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "76da7080e48a8a067fee9c0e0b8fead0feb034c5b1fe08b6cab3ddfa3ada3dc5"
   },
   "docs/server/media-transports.md": {
     "path": "docs/media-transports.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "d9156dd5aff70e429858ce1ffabb8d1032fc688449fe941df350ed46d4afb47d"
   },
   "docs/server/moderation.md": {
     "path": "docs/moderation.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "94eb2935a970a2cc97cc1fe55c41d97e3208f3533953a435c34881087ebe16e2"
   },
   "docs/server/openapi.json": {
     "path": "docs/openapi.json",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "6a35dca9df65aff335ac8b188a28e3a8871d53f12e7c868f45d1548fb6a63ae4"
   },
   "docs/server/operations.md": {
     "path": "docs/operations.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "518044f64ae35cfaee3fbe7d91ea3d6388ef5d05a6f3257880001a774f109a56"
   },
   "docs/server/roadmap.md": {
     "path": "docs/roadmap.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "353d7184fdee5b9e11b1227f39a78ae2c02f70275a4a918b4b5a606745b38b42"
   },
   "docs/server/runtime-settings.md": {
     "path": "docs/runtime-settings.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "198bf974f89d322d42fee43d7c7eb4870eb356af625b4db9cfa5086d19a969b8"
   },
   "docs/server/security-review.md": {
     "path": "docs/security-review.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "1a3c3114f5bdaba1be5c01975befaefc1d74109fcf6ef23965f0205773c43ee6"
   },
   "docs/server/server-design.md": {
     "path": "docs/server-design.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "cad59a6b35337c88e5997fc79cff2d2c33b9fc0ef3e012dfde3033926025528d"
   },
   "docs/server/server-extensions.md": {
     "path": "docs/server-extensions.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "45ee797343f4f458c6cb6ea10af412c1e8885bdb4a57507e31b9045a408cef38"
   },
   "docs/server/server-menus.md": {
     "path": "docs/server-menus.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "0a5e222d22429e26122b35db8cea53aa32d29a50e03819871e2fa944928ddb70"
   },
   "docs/server/testing.md": {
     "path": "docs/testing.md",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "c7a989936b903882cf4c1ed07b3355c5da0b08f762b63418d51d6f3370cbf619"
   },
   "docs/server/websocket.json": {
     "path": "docs/websocket.json",
     "repository": "example-git/haunt-server",
-    "revision": "f793c5d6bbc269cef2ddda85b3a0b07b7286d647",
+    "revision": "6057c7fb4fe295aff45f4dd9558b2636014123c4",
     "source_sha256": "be5082a853b6c70b562ef3c37ab244e5701ce7e57ec18b2f52e5cd2f40a7b7a8"
   }
 }
