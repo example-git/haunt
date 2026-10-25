@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/6057c7fb4fe295aff45f4dd9558b2636014123c4/docs/media-transports.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/2f1ef5712b9c0e849007c0c3e167b4673c3fd6b3/docs/media-transports.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Media hosting and client protocol
 
@@ -13,6 +13,19 @@ Transport is an installation setting. Clients read `transport` from an authorize
 | `HAUNT_CLOUDFLARED_ENABLED=true`, no external TURN | `websocket` | API, signaling and encoded media over HTTPS/WSS through cloudflared |
 
 STUN alone does not count as an external relay. The optional built-in relay does not make a host behind an HTTP tunnel publicly reachable, so it does not suppress the WebSocket fallback. Configured but unavailable external TURN produces an explicit media error; it does not silently change the protocol during a call.
+
+## Microphone levels
+
+Instances advertising `media.levels.v1` relay `media.level` reports on the event
+socket for both transports. Levels are measured by the sender after filtering
+and gain on a fixed -60 to 0 dBFS scale, represented as integers from 0 to 100.
+The command includes the current `participant_id` and `level`; its reply is
+`media.level.accepted`. Other members of the same room receive the participant ID
+and level, including deafened listeners. Muted and deafened senders do not report.
+Send changes at most ten times per second, with an unchanged reading every 500 ms;
+the server permits at most 20 reports per second separately from control commands.
+Receivers clear reports on mute, leave or reconnect and mark missing readings
+unavailable after two seconds. Reports are ephemeral and do not confirm audio delivery.
 
 ## External TURN
 
