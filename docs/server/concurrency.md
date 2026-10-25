@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/386da557aee250d55f91d843bcfec7cfd7fc4312/docs/concurrency.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9eb5a95bea6128c33db29e754ab01cf6251f68bb/docs/concurrency.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Concurrency and resource ownership
 
