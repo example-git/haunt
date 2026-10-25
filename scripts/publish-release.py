@@ -110,7 +110,9 @@ def main():
     if set(signed["targets"]) != {"win32-x64", "linux-x64", "linux-arm64", "darwin-arm64"}:
         raise ValueError("Unexpected signed client platform set")
     selected = [client / "haunt-updates.json"]
-    for target in signed["targets"].values():
+    for name, target in signed["targets"].items():
+        if name.startswith("linux-") and "rpm" not in target:
+            raise ValueError(f"Missing signed RPM for {name}")
         for key in ["asar", "installer"] + (["rpm"] if "rpm" in target else []):
             artifact = target[key]
             path = client / artifact["file"]
