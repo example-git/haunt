@@ -92,13 +92,43 @@ class ReleaseTests(unittest.TestCase):
 
     def test_orphan_tag_cannot_publish_a_different_source_revision(self):
         reference = {"object": {"type": "commit", "sha": "f" * 40}}
-        with patch.object(release, "optional_api", side_effect=[None, reference]), patch.object(release, "run") as run:
+        with patch.object(release, "find_release", return_value=None), patch.object(release, "optional_api", return_value=reference), patch.object(release, "run") as run:
             with self.assertRaisesRegex(ValueError, "different source"):
                 release.ensure_release(self.plan, draft=True)
             run.assert_not_called()
         with patch.object(release, "api", return_value=[{"artifacts": []}]), patch.dict(os.environ, GITHUB_RUN_ID="123", GITHUB_RUN_ATTEMPT="2"):
             with self.assertRaisesRegex(ValueError, "No saved release plan"):
                 release.restore_artifact("release-plan", self.root)
+
+    def test_creation_uses_response_and_channel_flags_without_published_tag_lookup(self):
+        for channel, draft in [("stable", True), ("dev", False)]:
+            with self.subTest(channel=channel):
+                plan = {**self.plan, "channel": channel}
+                if channel == "dev":
+                    plan.update(version="0.17.9-dev.42", tag="dev-v0.17.9-dev.42", targets=["linux-x64"])
+                response = {"id": 123, "tag_name": plan["tag"], "draft": draft, "prerelease": channel == "dev", "target_commitish": plan["revision"], "assets": []}
+                with patch.object(release, "optional_api", return_value=None) as lookup, patch.object(release, "api", side_effect=[[], response]) as api:
+                    self.assertEqual(release.ensure_release(plan, draft=draft), response)
+                self.assertEqual(lookup.call_count, 2)
+                self.assertEqual(api.call_args.args[:3], (f"repos/{release.REPO}/releases", "--method", "POST"))
+                self.assertIn("target_commitish=" + plan["revision"], api.call_args.args)
+                self.assertIn("draft=" + str(draft).lower(), api.call_args.args)
+                self.assertIn("prerelease=" + str(channel == "dev").lower(), api.call_args.args)
+                self.assertIn("make_latest=false", api.call_args.args)
+
+    def test_existing_unpublished_draft_is_found_and_reused_without_creating_another(self):
+        draft = {"id": 123, "tag_name": self.plan["tag"], "draft": True, "prerelease": False, "target_commitish": self.plan["revision"], "assets": []}
+        earlier = [{"tag_name": f"v0.16.{index}"} for index in range(100)]
+        with patch.object(release, "optional_api", return_value=None), patch.object(release, "api", side_effect=[earlier, [draft]]) as api:
+            self.assertEqual(release.ensure_release(self.plan, draft=True), draft)
+        self.assertEqual(api.call_count, 2)
+        self.assertEqual(api.call_args.args, (f"repos/{release.REPO}/releases?per_page=100&page=2",))
+
+    def test_unpublished_draft_cannot_change_the_recorded_source(self):
+        draft = {"id": 123, "tag_name": self.plan["tag"], "draft": True, "prerelease": False, "target_commitish": "f" * 40}
+        with patch.object(release, "find_release", return_value=draft), patch.object(release, "optional_api", return_value=None):
+            with self.assertRaisesRegex(ValueError, "source tag"):
+                release.ensure_release(self.plan, draft=True)
 
     def test_new_plan_uses_hub_version_and_frozen_gitlinks(self):
         args = argparse.Namespace(channel="dev", plan=str(self.root / "plan.json"), version="", targets="linux-x64", bump="patch")

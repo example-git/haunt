@@ -321,8 +321,21 @@ def optional_api(route):
     return json.loads(result.stdout)
 
 
+def find_release(tag):
+    published = optional_api(f"repos/{REPO}/releases/tags/{tag}")
+    if published:
+        return published
+    page = 1
+    while True:
+        releases = api(f"repos/{REPO}/releases?per_page=100&page={page}")
+        found = next((release for release in releases if release["tag_name"] == tag), None)
+        if found or len(releases) < 100:
+            return found
+        page += 1
+
+
 def ensure_release(plan, draft=False):
-    release = optional_api(f"repos/{REPO}/releases/tags/{plan['tag']}")
+    release = find_release(plan["tag"])
     reference = optional_api(f"repos/{REPO}/git/ref/tags/{plan['tag']}")
     if reference:
         ref = reference["object"]
@@ -335,17 +348,14 @@ def ensure_release(plan, draft=False):
     if release:
         if release["prerelease"] != (plan["channel"] == "dev"):
             raise ValueError("Release channel conflict")
-        if not reference:
+        if not reference and not (release["draft"] and release["target_commitish"] == plan["revision"]):
             raise ValueError("Release source tag is missing")
         return release
-    args = ["gh", "release", "create", plan["tag"], "--repo", REPO, "--target", plan["revision"],
-        "--title", "Haunt " + plan["version"], "--notes", "Components and source revisions are recorded in haunt-release.json.", "--latest=false"]
-    if plan["channel"] == "dev":
-        args.append("--prerelease")
-    if draft:
-        args.append("--draft")
-    run(*args)
-    return api(f"repos/{REPO}/releases/tags/{plan['tag']}")
+    return api(f"repos/{REPO}/releases", "--method", "POST", "-f", "tag_name=" + plan["tag"],
+        "-f", "target_commitish=" + plan["revision"], "-f", "name=Haunt " + plan["version"],
+        "-f", "body=Components and source revisions are recorded in haunt-release.json.",
+        "-f", "make_latest=false", "-F", "prerelease=" + str(plan["channel"] == "dev").lower(),
+        "-F", "draft=" + str(draft).lower())
 
 
 def upload(plan, files, draft=False):
