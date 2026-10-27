@@ -6,8 +6,10 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const { Updater, verifyManifest } = require("../client/apps/desktop/updates.cjs");
-const [base, feedPath, manifestFile, version] = process.argv.slice(2);
-const envelope = JSON.parse(await fs.readFile(manifestFile, "utf8"));
+const [base, feedPath, version] = process.argv.slice(2);
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
+const envelope = JSON.parse(input);
 const config = JSON.parse(await fs.readFile(new URL("../client/static/updates.json", import.meta.url), "utf8"));
 const payload = JSON.parse(Buffer.from(envelope.payload, "base64").toString("utf8"));
 assert.equal(payload.version, version);

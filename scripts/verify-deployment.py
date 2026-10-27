@@ -59,8 +59,10 @@ def verify_feed(base, plan, envelope, community=False):
         check(installers["manifest"] == envelope and set(installers["available"]) == set(payload["targets"]), "Public installer inventory mismatch")
     artifacts = [entry[kind] for entry in payload["targets"].values() for kind in ["asar", "installer", "rpm"] if kind in entry]
     check(len(artifacts) == 10, "Incomplete signed release")
-    downloads = json.loads(subprocess.check_output(["node", str(ROOT / "scripts/verify-client-downloads.mjs"), base, path,
-        str(ROOT / "release/publish/haunt-updates.json"), plan["version"]], text=True))
+    result = subprocess.run(["node", str(ROOT / "scripts/verify-client-downloads.mjs"), base, path, plan["version"]],
+        input=json.dumps(envelope), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    check(result.returncode == 0, "Public launcher download verification failed: " + result.stderr.strip())
+    downloads = json.loads(result.stdout)
     check(len(downloads) == 10 and set(downloads) == {asset["file"] for asset in artifacts}, "Launcher download inventory mismatch")
     return downloads
 
