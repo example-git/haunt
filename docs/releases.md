@@ -85,7 +85,8 @@ other environment entries remain unchanged. Rollback restores the previous feed
 alongside the service binary.
 
 After deployment, the stable GitHub feed is activated. Public service readiness,
-CORS, identity, web assets, and every signed desktop download are verified.
+CORS, identity, web assets, and every signed desktop download are verified. Public
+downloads use the permanent launcher's source, signature, redirect and file checks.
 Verified container manifests then become `latest`. Services and publication
 endpoints update sequentially; the workflow reports failure if any stage fails.
 
