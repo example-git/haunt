@@ -42,6 +42,31 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 release.stable_tuple(value)
 
+    def test_service_builder_reads_version_from_both_streams_and_rejects_mismatch(self):
+        spec = importlib.util.spec_from_file_location("build_service", release.ROOT / "scripts/build-service.py")
+        builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(builder)
+        release.write(self.root / "release/plan.json", self.plan)
+        release.write(self.root / "client/web-deployment.json", {"origin": "https://web.example.test"})
+        (self.root / "sync").mkdir()
+        execute = subprocess.run
+        for stream, version in [("stdout", self.plan["version"]), ("stderr", self.plan["version"]), ("stderr", "0.0.0")]:
+            with self.subTest(stream=stream, version=version):
+                def compile_or_execute(command, *args, **kwargs):
+                    if command[0] != "go":
+                        return execute(command, *args, **kwargs)
+                    executable = Path(command[command.index("-o") + 1])
+                    output = "2026/10/27 12:00:00 Haunt Sync " + version + "\n"
+                    executable.write_text("#!" + sys.executable + "\nimport sys\nsys." + stream + ".write(" + repr(output) + ")\n")
+                    executable.chmod(0o700)
+                    return subprocess.CompletedProcess(command, 0)
+                with patch.object(builder, "ROOT", self.root), patch.dict(os.environ, COMPONENT="sync", ARCH="amd64"), patch.object(builder.subprocess, "run", side_effect=compile_or_execute):
+                    if version == self.plan["version"]:
+                        builder.main()
+                    else:
+                        with self.assertRaisesRegex(ValueError, "version does not match"):
+                            builder.main()
+
     @patch.dict(os.environ, GITHUB_REF="refs/heads/main")
     def test_saved_plan_retry_never_reselects_moving_sources_or_version(self):
         file = self.root / "plan.json"
