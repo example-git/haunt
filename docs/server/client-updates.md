@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/b79ea54e526960bb766f87810c4499dc670a899b/docs/client-updates.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5a03472b477fd69031332d510bee53401336f622/docs/client-updates.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop client distribution
 
@@ -23,6 +23,8 @@ credentials reach clients and update files are separate from message storage.
 
 GitHub download links follow the hub's `vX.Y.Z` tags or the legacy client's
 `client-vX.Y.Z` tags. Hub deployments select the exact published release manifest.
+Artifact requests resolve to GitHub's approved release-asset CDN hosts. File bytes
+travel directly from the CDN to the client; session credentials stay on the server.
 
 Use `scripts/install-client-release.py --directory <data>/client-updates
 --public-key /protected/update-public.pem` with a release tar.gz on stdin.

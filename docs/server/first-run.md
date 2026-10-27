@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/b79ea54e526960bb766f87810c4499dc670a899b/docs/first-run.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5a03472b477fd69031332d510bee53401336f622/docs/first-run.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # First-time setup
 
