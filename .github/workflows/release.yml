@@ -36,9 +36,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
       - uses: ./.github/actions/components
         id: components
-      - run: python scripts/check-release-setup.py
+      - run: python scripts/check-release-setup.py --connections
         name: Validate stable release configuration
         env:
           HAUNT_UPDATE_PRIVATE_KEY: ${{ secrets.HAUNT_UPDATE_PRIVATE_KEY }}
