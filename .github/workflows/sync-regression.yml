@@ -55,7 +55,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sync-regression-evidence
+          name: sync-regression-evidence-${{ github.run_attempt }}
           path: client/test-results/
           if-no-files-found: ignore
       - name: Remove only this job's fixture
