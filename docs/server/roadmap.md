@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/b8e79640e1b14bdf2bf2629402e18d1b4ed618da/docs/roadmap.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/63f71bdadcf6a4e71e346b7ff49be24a06ccc919/docs/roadmap.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Project direction
 
@@ -11,5 +11,13 @@ Ongoing work includes wider device/browser coverage, release and recovery testin
 and independent review of the DM encryption implementation. The shared client core
 allows future Android messaging without requiring mobile voice in the first release.
 Federated accounts and a public centralized hosting platform are not current goals.
+
+A later extension category will support server-owned LLM chatbots. Each server will
+own bot identities, allowed channels, configuration, conversation context and jobs.
+Mention/reply triggers and dedicated bot channels will use the existing extension
+administration model with a versioned chat protocol. Inference jobs will run
+separately from message delivery and history reads, with durable deduplication.
+Model endpoints may be local or external; identities and memory remain scoped to
+one server. Utility bots and federated bot identities are outside this stage.
 
 See [testing](testing.md) for the verification harnesses and their limits.

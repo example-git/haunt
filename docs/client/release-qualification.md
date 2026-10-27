@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/cd677f404d4df1be625394124f07b1a7671a6056/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/806d38152ad540f29921b20cd6631f284167261a/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Release qualification
 
@@ -20,6 +20,13 @@ Linux jobs also install the RPM with DNF in a disposable Fedora container and la
 the installed Electron application as an unprivileged user. They check the menu
 launcher, RPM update selection, package replacement, removal, and profile retention
 through reinstallation. Results are recorded in `fedora-rpm-*` artifacts.
+
+The bundled-runtime check installs fresh RPM and AppImage packages in a minimal
+Fedora container without system GStreamer. It then uses a previous published
+package's updater with a signed test feed to replace each format. The packaged
+capture worker must produce H.264 video and isolated app/output audio after both
+installation and update. `linux-runtime-install-*` records the runtime hashes,
+installer selection and capture results on x64 and ARM64.
 
 Notification checks drive the packaged app with protocol messages and real UI
 actions. They inspect actual desktop popups and badges, click OS notifications,

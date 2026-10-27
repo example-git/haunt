@@ -1,6 +1,6 @@
 # Sync protocol and security boundaries
 
-Haunt Sync stores encrypted settings and saved sign-ins for clients connected to
+Haunt Sync stores encrypted settings, saved sign-ins and private text archives for clients connected to
 an independently operated sync service.
 
 Sync is disabled until a user explicitly enables it. Ordinary community sign-in,
@@ -22,10 +22,26 @@ Neither account creation nor unlocking requires a project-wide authentication
 service. The host pays for storage but receives no payload decryption keys.
 
 Local client data is the working copy. The service keeps current encrypted
-snapshots for synchronization, with no promise of archival history or retention.
+settings and message-archive snapshots without retaining prior vault revisions.
 An unavailable service, failed authentication or missing snapshot cannot erase
 local settings. A new sync account starts from the client’s local copy. Losing
 the instance cannot recover data that no client still retains.
+
+Message text is archived separately from live chat. Live deletion leaves an
+already downloaded archive copy intact. Explicit archive deletion removes that
+entry from the user's local and synced archive and wins over stale imports;
+independent exported files are unaffected. Text-only local backups use gzip
+JSONL and omit attachments, session credentials and encryption keys. Restoring
+these files never inserts messages into live conversations.
+
+Archives use independent `archive-chunk:<scope>:<chunk-hash>` vaults with the same
+scope permissions and keys as settings and distinct authenticated data. Clients
+cache compressed 100-message chunks, fetch a paged change list, and transfer only
+changed chunks. Interrupted uploads resume from completed chunk checkpoints.
+Chunks are processed individually; the 20 MiB per-payload encryption bound does
+not cap total archive size. Existing `archive:<scope>` snapshots migrate after
+all chunks upload, leaving a small version marker. This requires the updated
+Sync service.
 
 ## Sign-in, synchronization and browser pairing
 
@@ -45,10 +61,12 @@ the approval. The web client receives only its origin-scoped key, not the master
 password, private keyword or complete root.
 
 Password or keyword changes re-encrypt every current ciphertext on the client.
-The service verifies a signed complete migration and exact revisions under a
-per-account transaction; no partial password/ciphertext change commits. All old
+Replacements upload one vault at a time into a temporary migration. The service
+verifies a signed hash chain, complete coverage and exact starting revisions under
+a per-account transaction; no partial password/ciphertext change commits. All old
 devices and in-flight authentication challenges are revoked. The client then
-forces full resync, including unchanged full and scoped snapshots. Failure stays
+forces full settings resync and checks every full and scoped archive chunk;
+matching archive text is not uploaded again. Failure stays
 visible and local working settings remain available. Initial account setup and
 email recovery also require that full resync.
 

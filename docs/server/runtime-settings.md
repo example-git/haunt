@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/b8e79640e1b14bdf2bf2629402e18d1b4ed618da/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/63f71bdadcf6a4e71e346b7ff49be24a06ccc919/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Live server configuration and attachment storage
 
@@ -45,6 +45,14 @@ shares. The bucket must already exist; mounting shares and granting filesystem
 access are host administration steps. The server process must have access to the
 path. With the example systemd sandbox, use a mounted folder beneath the configured
 data directory or explicitly allow another storage root with ReadWritePaths.
+
+The menu provides presets for Amazon S3, Cloudflare R2, Backblaze B2,
+DigitalOcean Spaces, MinIO/owner-hosted S3, custom S3 endpoints, and local folders.
+R2 uses region `auto` and the account endpoint; B2 needs the bucket's regional
+S3 endpoint and matching region; Spaces uses its regional endpoint and
+`us-east-1` for signing. Presets populate protocol options; they do not create
+buckets or provider accounts. Registering still checks the supplied credentials
+and destination before saving.
 
 Registration and connection checks write, read and delete a small random object.
 AWS endpoints are derived from the region when Endpoint is empty. Compatible
