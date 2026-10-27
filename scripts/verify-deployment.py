@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 import tarfile
 import time
 import urllib.parse
@@ -58,19 +59,9 @@ def verify_feed(base, plan, envelope, community=False):
         check(installers["manifest"] == envelope and set(installers["available"]) == set(payload["targets"]), "Public installer inventory mismatch")
     artifacts = [entry[kind] for entry in payload["targets"].values() for kind in ["asar", "installer", "rpm"] if kind in entry]
     check(len(artifacts) == 10, "Incomplete signed release")
-    def verify(asset):
-        version = plan["version"] if community else "client-v" + plan["version"]
-        url = base + path + "/" + version + "/" + asset["file"]
-        digest = hashlib.sha256()
-        size = 0
-        with request(url) as response:
-            while chunk := response.read(1 << 20):
-                size += len(chunk)
-                digest.update(chunk)
-        check(size == asset["size"] and digest.hexdigest() == asset["sha256"], "Public download hash mismatch: " + asset["file"])
-        return asset["file"]
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        downloads = list(pool.map(verify, artifacts))
+    downloads = json.loads(subprocess.check_output(["node", str(ROOT / "scripts/verify-client-downloads.mjs"), base, path,
+        str(ROOT / "release/publish/haunt-updates.json"), plan["version"]], text=True))
+    check(len(downloads) == 10 and set(downloads) == {asset["file"] for asset in artifacts}, "Launcher download inventory mismatch")
     return downloads
 
 
