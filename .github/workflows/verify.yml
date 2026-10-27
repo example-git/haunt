@@ -78,6 +78,9 @@ jobs:
           echo "origin=$origin" >> "$GITHUB_OUTPUT"
 
           '
+      - name: Use official Ubuntu package servers
+        working-directory: .
+        run: sudo python3 scripts/configure-linux-packages.py
       - name: Require media dependencies
         run: "sudo apt-get update
 

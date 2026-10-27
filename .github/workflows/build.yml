@@ -79,6 +79,10 @@ jobs:
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - run: npm run build
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - name: Use official Ubuntu package servers
+        if: ${{ steps.restore.outputs.restored != 'true' && matrix.platform == 'linux' }}
+        working-directory: .
+        run: sudo python3 scripts/configure-linux-packages.py
       - name: Install RPM build tools
         if: ${{ steps.restore.outputs.restored != 'true' && (matrix.platform == 'linux') }}
         run:
