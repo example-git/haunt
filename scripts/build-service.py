@@ -27,7 +27,7 @@ def main():
     environment = {**os.environ, "CGO_ENABLED": "0", "GOOS": "linux", "GOARCH": arch}
     subprocess.run(command, cwd=ROOT / component, env=environment, check=True)
     executable = output / ("haunt-" + component + "-linux-" + arch)
-    version = subprocess.check_output([str(executable), "-version" if component == "server" else "--version"], text=True).strip().split()[-1]
+    version = subprocess.check_output([str(executable), "-version" if component == "server" else "--version"], text=True, stderr=subprocess.STDOUT).strip().split()[-1]
     if version != plan["version"]:
         raise ValueError("Standalone service version does not match the release plan")
     if component == "server" and plan["channel"] == "stable":
