@@ -31,12 +31,19 @@ class PublicVerificationTests(unittest.TestCase):
             "-addext", "subjectAltName=DNS:updates.fixture.test,IP:127.0.0.1", "-addext", "basicConstraints=critical,CA:TRUE",
             "-keyout", str(key), "-out", str(certificate)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.files = {}
+        self.headers = {}
+        self.requests = []
         files = self.files
+        headers, requests = self.headers, self.requests
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                data = files.get(urllib.parse.urlsplit(self.path).path)
+                path = urllib.parse.urlsplit(self.path).path
+                requests.append(path)
+                data = files.get(path)
                 self.send_response(200 if data is not None else 404)
                 self.send_header("Content-Length", str(len(data) if data is not None else 0))
+                for name, value in headers.get(path, {}).items():
+                    self.send_header(name, value)
                 self.end_headers()
                 if data is not None:
                     self.wfile.write(data)
@@ -72,15 +79,49 @@ https.globalAgent.createConnection=function(options,...args){
     def test_public_assets_must_equal_the_selected_build(self):
         archive = Path(self.temp.name) / "web.tar.gz"
         with tarfile.open(archive, "w:gz") as bundle:
-            for name, data in [("index.html", b"selected build"), ("assets/client.js", b"selected code")]:
+            for name, data in [("index.html", b"selected build"), ("assets/client.js", b"selected code"), ("_headers", b"ordinary static file")]:
                 info = tarfile.TarInfo("./" + name)
                 info.size = len(data)
                 bundle.addfile(info, io.BytesIO(data))
                 self.files["/" + name] = data
-        self.assertEqual(verification.verify_archive(self.origin, archive, "./"), 2)
+        self.assertEqual(verification.verify_archive(self.origin, archive, "./"), 3)
+        self.assertIn("/_headers", self.requests)
         self.files["/assets/client.js"] = b"wrong deployment"
         with self.assertRaisesRegex(ValueError, "asset mismatch"):
             verification.verify_archive(self.origin, archive, "./")
+
+    def test_cloudflare_headers_are_verified_as_response_rules(self):
+        archive = Path(self.temp.name) / "web.tar.gz"
+        with tarfile.open(archive, "w:gz") as bundle:
+            for name, data in [("index.html", b"selected build"), ("assets/client.js", b"selected code"),
+                ("_headers", b"/*\n  X-Content-Type-Options: nosniff\n/assets/*\n  Cache-Control: public, immutable\n/\n  Cache-Control: no-cache\n")]:
+                info = tarfile.TarInfo("./" + name)
+                info.size = len(data)
+                bundle.addfile(info, io.BytesIO(data))
+                if name != "_headers":
+                    self.files["/" + name] = data
+        self.files["/"] = self.files["/index.html"]
+        self.headers.update({path: {"X-Content-Type-Options": "nosniff"} for path in self.files})
+        self.headers["/assets/client.js"]["Cache-Control"] = "public, immutable"
+        self.headers["/"]["Cache-Control"] = "no-cache"
+        self.assertEqual(verification.verify_archive(self.origin, archive, "./", cloudflare=True), 2)
+        self.assertNotIn("/_headers", self.requests)
+        self.headers["/assets/client.js"]["Cache-Control"] = "no-cache"
+        with self.assertRaisesRegex(ValueError, "header mismatch"):
+            verification.verify_archive(self.origin, archive, "./", cloudflare=True)
+        self.headers["/assets/client.js"]["Cache-Control"] = "public, immutable"
+        self.headers["/"].pop("X-Content-Type-Options")
+        with self.assertRaisesRegex(ValueError, "header mismatch"):
+            verification.verify_archive(self.origin, archive, "./", cloudflare=True)
+
+    def test_cloudflare_header_rules_must_be_present(self):
+        archive = Path(self.temp.name) / "web.tar.gz"
+        with tarfile.open(archive, "w:gz") as bundle:
+            info = tarfile.TarInfo("./index.html")
+            info.size = 1
+            bundle.addfile(info, io.BytesIO(b"x"))
+        with self.assertRaisesRegex(ValueError, "header rules are missing"):
+            verification.verify_archive(self.origin, archive, "./", cloudflare=True)
 
     def test_both_public_feed_paths_verify_all_signed_download_bytes(self):
         import base64

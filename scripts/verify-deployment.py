@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tarfile
 import time
@@ -27,17 +28,46 @@ def check(value, message):
         raise ValueError(message)
 
 
-def verify_archive(origin, archive, prefix):
+def verify_archive(origin, archive, prefix, cloudflare=False):
+    policies = []
     with tarfile.open(archive) as bundle:
+        if cloudflare:
+            control = next((item for item in bundle.getmembers() if item.isfile() and item.name == prefix + "_headers"), None)
+            check(control is not None, "Cloudflare header rules are missing")
+            for line in bundle.extractfile(control).read().decode().splitlines():
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+                if not line[0].isspace():
+                    policies.append((re.compile("^" + re.escape(line.strip()).replace(r"\*", ".*") + "$"), []))
+                else:
+                    check(bool(policies) and ":" in line, "Unsupported Cloudflare header rule")
+                    name, value = line.strip().split(":", 1)
+                    policies[-1][1].append((name.lower(), value.strip()))
+            check(bool(policies), "Cloudflare header rules are empty")
         files = [(item.name[len(prefix):], hashlib.sha256(bundle.extractfile(item).read()).hexdigest())
-            for item in bundle.getmembers() if item.isfile() and item.name.startswith(prefix)]
+            for item in bundle.getmembers() if item.isfile() and item.name.startswith(prefix)
+            and not (cloudflare and item.name == prefix + "_headers")]
     check(bool(files), "Expected web assets are missing")
     def verify(item):
         name, expected = item
+        path = "/" + name
+        matched, headers = set(), {}
+        for index, (pattern, entries) in enumerate(policies):
+            if pattern.fullmatch(path):
+                matched.add(index)
+                for key, value in entries:
+                    headers.setdefault(key, []).append(value)
         with request(origin + "/" + urllib.parse.quote(name, safe="/")) as response:
             check(hashlib.sha256(response.read()).hexdigest() == expected, "Deployed web asset mismatch: " + name)
+            for key, values in headers.items():
+                check(response.headers.get(key) == ", ".join(values), "Deployed web header mismatch: " + path + ": " + key)
+        return matched
     with ThreadPoolExecutor(max_workers=4) as pool:
-        list(pool.map(verify, files))
+        matched = set().union(*pool.map(verify, files))
+    if cloudflare:
+        check("index.html" in dict(files), "Hosted web entry point is missing")
+        matched.update(verify(("", dict(files)["index.html"])))
+        check(matched == set(range(len(policies))), "Cloudflare header rules were not exercised")
     return len(files)
 
 
@@ -88,7 +118,7 @@ def main():
         check(read(origin + "/healthz")[0]["status"] == "ready", "Public sync is not ready")
         check(read(origin + "/v1/config")[0]["issuer"] == origin, "Public sync issuer mismatch")
         results.append({"origin": origin, "downloads": verify_feed(origin, plan, envelope)})
-    count = verify_archive(server["web_origin"], output / ("haunt-web-" + plan["version"] + ".tar.gz"), "./")
+    count = verify_archive(server["web_origin"], output / ("haunt-web-" + plan["version"] + ".tar.gz"), "./", cloudflare=True)
     results.append({"origin": server["web_origin"], "assets": count})
     result = {"version": plan["version"], "revision": plan["revision"], "passed": True, "origins": results}
     write(ROOT / "release/public-verification.json", result)
