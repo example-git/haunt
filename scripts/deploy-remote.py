@@ -66,10 +66,22 @@ def atomic_file(source, destination, mode=0o755):
             stage.unlink(missing_ok=True)
 
 
+def server_environment(data, manifest):
+    pattern = re.compile(rb"(?m)^([ \t]*HAUNT_CLIENT_UPDATE_MANIFEST_URL[ \t]*=)[^\r\n]*")
+    value = manifest.encode()
+    if pattern.search(data):
+        return pattern.sub(lambda match: match.group(1) + value, data)
+    newline = b"\r\n" if b"\r\n" in data else b"\n"
+    return data + (newline if data and not data.endswith(b"\n") else b"") + b"HAUNT_CLIENT_UPDATE_MANIFEST_URL=" + value + newline
+
+
 def server(stage, config, plan):
     binary = Path(config["binary"])
     data = Path(config["data"])
     service = config["service"]
+    environment = Path(config["environment_file"])
+    environment_stat = environment.stat()
+    manifest = f"https://github.com/{plan['repository']}/releases/download/{plan['tag']}/haunt-updates.json"
     prop = lambda name: run("systemctl", "show", service, "--property=" + name, "--value")
     pid = prop("MainPID")
     check(prop("ActiveState") == "active", "Server service is not active")
@@ -120,9 +132,22 @@ def server(stage, config, plan):
             run("systemctl", "start", service)
             raise
     state = json.loads((backup / "before.json").read_text())
+    original_environment = backup / ("config-" + str(config["preserved_files"].index(config["environment_file"])))
+    desired_environment = server_environment(original_environment.read_bytes(), manifest)
+    environment_sha256 = hashlib.sha256(desired_environment).hexdigest()
+    expected_files = {**state["files"], config["environment_file"]: environment_sha256}
+    environment_changed = False
     try:
-        if digest(binary) != expected:
+        check(digest(environment) in {state["files"][config["environment_file"]], environment_sha256}, "Service environment changed since the deployment snapshot")
+        if digest(binary) != expected or digest(environment) != environment_sha256 or live.get("HAUNT_CLIENT_UPDATE_MANIFEST_URL") != manifest:
             run("systemctl", "stop", service)
+        if digest(environment) != environment_sha256:
+            staged_environment = stage / "next-server.env"
+            staged_environment.write_bytes(desired_environment)
+            atomic_file(staged_environment, environment, environment_stat.st_mode & 0o7777)
+            environment_changed = True
+            os.chown(environment, environment_stat.st_uid, environment_stat.st_gid)
+        if digest(binary) != expected:
             atomic_file(source, binary)
         run("systemctl", "start", service)
         def verify():
@@ -130,26 +155,34 @@ def server(stage, config, plan):
             info, headers = read(config["local_origin"], "/api/v1/instance", {"Origin": config["web_origin"]})
             check(info["instance_id"] == state["instance"]["instance_id"], "Server identity changed")
             check(headers.get("Access-Control-Allow-Origin") == config["web_origin"], "Hosted client CORS failed")
+            current_pid = prop("MainPID")
+            current_environment = dict(x.split("=", 1) for x in Path("/proc/" + current_pid + "/environ").read_bytes().decode().split("\0") if "=" in x)
+            check(current_environment.get("HAUNT_CLIENT_UPDATE_MANIFEST_URL") == manifest, "Server did not select the published release feed")
             return info
         ready(verify)
         current = json.loads(sql("SELECT to_jsonb(i)::text FROM chatxo.instances i WHERE singleton"))
         check(all(current.get(key) == value for key, value in state["settings"].items()), "Server settings changed")
         current_roles = json.loads(sql("SELECT COALESCE(jsonb_object_agg(id::text,permissions),'{}'::jsonb)::text FROM chatxo.roles"))
         check(all(current_roles.get(key) == value for key, value in state["roles"].items()), "Server role permissions changed")
-        check(all(digest(p) == value for p, value in state["files"].items()), "Server configuration or extension files changed")
+        check(all(digest(p) == value for p, value in expected_files.items()), "Server configuration or extension files changed")
         pid = prop("MainPID")
         check(digest("/proc/" + pid + "/exe") == expected and prop("NRestarts") == "0", "Server executable or restart verification failed")
         app = stage / "publish" / ("haunt-app-linux-" + config["arch"] + ".tar.gz")
         with tarfile.open(app) as archive:
             marker = json.load(archive.extractfile("web/haunt-build.json"))
         check(read(config["local_origin"], "/haunt-build.json")[0] == marker, "Embedded web build mismatch")
-        return {"version": plan["version"], "sha256": expected, "instance_id": before["instance_id"], "rollback": str(backup), "preserved_files": len(state["files"]), "public_verification": "pending"}
+        return {"version": plan["version"], "sha256": expected, "instance_id": before["instance_id"], "rollback": str(backup), "preserved_files": len(state["files"]), "manifest_url": manifest, "environment_sha256": environment_sha256, "public_verification": "pending"}
     except Exception:
-        if sql("SELECT max(version) FROM chatxo.schema_migrations") == state["schema"]:
+        compatible = sql("SELECT max(version) FROM chatxo.schema_migrations") == state["schema"]
+        if compatible or environment_changed:
             run("systemctl", "stop", service)
-            atomic_file(backup / "haunt", binary)
+            if environment_changed:
+                atomic_file(original_environment, environment, environment_stat.st_mode & 0o7777)
+                os.chown(environment, environment_stat.st_uid, environment_stat.st_gid)
+            if compatible:
+                atomic_file(backup / "haunt", binary)
             run("systemctl", "start", service)
-        else:
+        if not compatible:
             print(json.dumps({"rollback": "database schema advanced; retained database and rollback snapshot", "backup": str(backup)}), flush=True)
         raise
 

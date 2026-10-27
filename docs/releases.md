@@ -80,6 +80,9 @@ publishes the tested multiarch images and coordinated downloads. Web deployment
 uses the already verified archive. SSH deployment backs up server/Nexus state,
 preserves configuration and identity, and retains rollback material. The Nexus
 feed importer publishes its manifest only after all verified files are present.
+The community service's environment file selects the exact hub release feed;
+other environment entries remain unchanged. Rollback restores the previous feed
+alongside the service binary.
 
 After deployment, the stable GitHub feed is activated. Public service readiness,
 CORS, identity, web assets, and every signed desktop download are verified.
@@ -126,6 +129,7 @@ Configure two JSON repository variables. `HAUNT_SERVER_DEPLOYMENT`:
   "service": "chatxo-test.service",
   "binary": "/usr/local/bin/haunt",
   "data": "/var/lib/chatxo-test",
+  "environment_file": "/etc/chatxo-test.env",
   "database_container": "chatxo-identity-check",
   "database_port": 32768,
   "arch": "arm64",
