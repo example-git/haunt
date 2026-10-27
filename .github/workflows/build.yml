@@ -1,0 +1,365 @@
+name: Build recorded targets
+"on":
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      channel:
+        type: string
+        required: true
+      desktop:
+        type: string
+        required: true
+      services:
+        type: string
+        required: true
+      has_desktop:
+        type: boolean
+        required: true
+      has_services:
+        type: boolean
+        required: true
+      has_web:
+        type: boolean
+        required: true
+permissions:
+  actions: read
+  contents: write
+jobs:
+  desktop:
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.desktop) }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: client
+    env:
+      HAUNT_UPDATE_PUBLIC_KEY: ${{ vars.HAUNT_UPDATE_PUBLIC_KEY }}
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - name: Reuse completed target
+        id: restore
+        run: python scripts/release.py restore-target --target "${{ matrix.target }}" --directory "client/release/updates"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: .
+      - uses: actions/setup-go@v6
+        if: ${{ steps.restore.outputs.restored != 'true' && (runner.os == 'Linux') }}
+        with:
+          go-version-file: client/native/media-worker/go.mod
+          cache-dependency-path: client/native/media-worker/go.sum
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm ci
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run:
+          npm test -- --run tests/desktop-updates.test.ts tests/desktop-installer.test.ts tests/desktop-appearance.test.ts
+          tests/desktop-tray.test.ts tests/desktop-notifications.test.ts
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm run build
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - name: Install RPM build tools
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.platform == 'linux') }}
+        run:
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends rpm libpulse-dev libglib2.0-dev
+          libx11-dev libxrandr-dev libxcomposite-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-tools
+          gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-pipewire
+      - run: npm run electron:stage
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm run electron:check
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - name: Start packaged Windows client
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.platform == 'win') }}
+        run: node scripts/check-packaged-startup.mjs
+      - run: npm run updates:pack
+        id: pack
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - name: Verify bundled Linux runtime installation and update
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'linux'))
+          }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/check-linux-runtime-install.mjs prepare
+          docker run --rm -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash scripts/ci/check-linux-runtime-install.sh
+      - name: Install and launch the RPM on Fedora
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'linux'))
+          }}
+        run: docker run --rm --cap-add=SYS_ADMIN -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash scripts/ci/check-fedora-rpm.sh
+      - name: Install native Linux test dependencies
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
+          == 'linux' && steps.pack.outcome == 'success')) }}
+        run:
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libnss3 libgbm1
+          libasound2t64 libnotify4 dbus-x11 gnome-keyring libsecret-1-0 python3-dbus python3-gi plank openbox xfwm4
+          imagemagick desktop-file-utils x11-utils dunst tesseract-ocr xdotool pipewire pipewire-pulse wireplumber
+          pulseaudio-utils
+      - name: Verify native screen and window capture
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
+          == 'linux' && steps.pack.outcome == 'success')) }}
+        run: node scripts/check-screen.mjs
+      - name: Install macOS native UI inspection tools
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
+          }}
+        run: brew install tesseract imagemagick cliclick
+      - name: Install Windows native UI inspection tools
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && matrix.platform == 'win')
+          }}
+        shell: pwsh
+        run: |
+          choco install -y tesseract imagemagick --no-progress
+          [Environment]::GetEnvironmentVariable("Path", "Machine").Split(";") | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Verify local macOS signing and in-app bundle replacement
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
+          }}
+        run: node scripts/check-mac-local-update.mjs
+      - name: Rehearse a full installer upgrade on the native runner
+        if:
+          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && steps.pack.outcome
+          == 'success')) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ matrix.platform }}" = linux ]; then
+            dbus-run-session -- xvfb-run -a -s "-screen 0 1920x1080x24" node scripts/check-installed-upgrade.mjs
+          else
+            node scripts/check-installed-upgrade.mjs
+          fi
+      - uses: actions/upload-artifact@v4
+        if: ${{ steps.restore.outputs.restored != 'true' && (always()) }}
+        with:
+          name: native-${{ matrix.target }}
+          path: |-
+            client/test-results/installed-upgrade-*.json
+            client/test-results/message-badge*
+            client/test-results/fedora-rpm-*.json
+            client/test-results/linux-runtime-install-*.json
+            client/test-results/fedora-notifications-*.json
+            client/test-results/notification-*
+            client/test-results/mac-local-update.json
+            client/test-results/mac-installer.log
+            client/test-results/mac-keychain-consent.json
+          retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
+      - name: Remove native test signing keychain
+        if: ${{ steps.restore.outputs.restored != 'true' && (always() && matrix.platform == 'mac') }}
+        run: node scripts/mac-ci-keychain.mjs cleanup
+      - run: python scripts/release.py describe --target "${{ matrix.target }}" --directory client/release/updates
+        name: Record artifact provenance
+        working-directory: .
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.target }}
+          path: client/release/updates/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: python scripts/release.py dev-upload --target "${{ matrix.target }}" --directory client/release/updates
+        name: Publish development target
+        if: inputs.channel == 'dev'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+    if: inputs.has_desktop
+  services:
+    if: inputs.has_services
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.services) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - name: Reuse completed target
+        id: restore
+        run:
+          python scripts/release.py restore-target --target "${{ matrix.target }}" --directory "release/${{ matrix.target
+          }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: .
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.component }}/go.mod
+          cache-dependency-path: ${{ matrix.component }}/go.sum
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm ci && npm run build
+        name: Build embedded web
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'server') }}
+        working-directory: client
+      - run: python scripts/build-service.py
+        name: Build selected service
+        env:
+          COMPONENT: ${{ matrix.component }}
+          ARCH: ${{ matrix.arch }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: docker/setup-buildx-action@v3
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: python3 -c 'import json,os; f=open(os.environ["GITHUB_OUTPUT"],"a"); f.write("value="+json.load(open("client/web-deployment.json"))["origin"]+"\n")'
+        id: origin
+        name: Read hosted web origin
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.component }}
+          load: true
+          platforms: linux/${{ matrix.arch }}
+          tags: ${{ matrix.component == 'server' && 'haunt:check' || 'haunt-sync:check' }}
+          build-args: |-
+            HAUNT_VERSION=${{ inputs.version }}
+            VERSION=${{ inputs.version }}
+            HAUNT_WEB_CLIENT_ORIGIN=${{ steps.origin.outputs.value }}
+          labels: |
+            org.opencontainers.image.version=${{ inputs.version }}
+            org.opencontainers.image.revision=${{ matrix.component == 'server' && steps.components.outputs.server || steps.components.outputs.sync }}
+            vg.xo.haunt.hub-revision=${{ github.sha }}
+            vg.xo.haunt.client-revision=${{ steps.components.outputs.client }}
+            org.opencontainers.image.source=https://github.com/example-git/${{ matrix.component == 'server' && 'haunt' || 'haunt-sync' }}
+          cache-from: type=gha,scope=hub-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=hub-${{ matrix.target }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: python3 server/scripts/test-container.py haunt:check
+        name: Verify server container
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'server') }}
+      - run: |-
+          docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
+          for _ in $(seq 1 60); do
+            if docker exec chatxo-identity-check pg_isready -U haunt_sync_iteration -d haunt_sync_iteration; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+        name: Start isolated sync fixture
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+      - run: npm ci
+        name: Install sync browser dependencies
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+        working-directory: client
+      - run: |-
+          python scripts/test-sync-container.py haunt-sync:check --client client
+          python scripts/test-sync-bundle.py haunt-sync:check --client client
+        name: Verify encrypted sync and restart restore
+        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+        env:
+          HAUNT_SYNC_TEST_DATABASE_URL: postgres://haunt_sync_iteration:synthetic-ci-fixture@127.0.0.1:32768/haunt_sync_iteration?sslmode=disable
+      - run: |-
+          image=haunt:check
+          if [ "$COMPONENT" = sync ]; then image=haunt-sync:check; fi
+          docker save "$image" | gzip > "release/$TARGET/$TARGET.docker.tar.gz"
+          python scripts/release.py describe --target "$TARGET" --directory "release/$TARGET"
+        name: Export tested container
+        env:
+          COMPONENT: ${{ matrix.component }}
+          TARGET: ${{ matrix.target }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.target }}
+          path: release/${{ matrix.target }}/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run:
+          python scripts/release.py dev-upload --target "${{ matrix.target }}" --directory "release/${{ matrix.target
+          }}"
+        name: Publish development target
+        if: inputs.channel == 'dev'
+        env:
+          GH_TOKEN: ${{ github.token }}
+  web:
+    if: inputs.has_web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - name: Reuse completed target
+        id: restore
+        run: python scripts/release.py restore-target --target "web" --directory "release/web"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm ci && npm run build:standalone && npm run test:standalone
+        working-directory: client
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: |-
+          mkdir -p release/web
+          tar -czf "release/web/haunt-web-${{ inputs.version }}.tar.gz" -C client/dist-standalone .
+          python scripts/release.py describe --target web --directory release/web
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-web
+          path: release/web/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
+        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: python scripts/release.py dev-upload --target web --directory release/web
+        name: Publish development target
+        if: inputs.channel == 'dev'
+        env:
+          GH_TOKEN: ${{ github.token }}

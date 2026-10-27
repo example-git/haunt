@@ -1,0 +1,71 @@
+name: Hub development prerelease
+"on":
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "Comma-separated targets: win32-x64,linux-x64,linux-arm64,darwin-arm64,web,server-linux-amd64,server-linux-arm64,sync-linux-amd64,sync-linux-arm64"
+        type: string
+        required: true
+        default: linux-x64
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: hub-dev-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      desktop: ${{ steps.plan.outputs.desktop }}
+      services: ${{ steps.plan.outputs.services }}
+      has_desktop: ${{ steps.plan.outputs.has_desktop }}
+      has_services: ${{ steps.plan.outputs.has_services }}
+      has_web: ${{ steps.plan.outputs.has_web }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python scripts/release.py restore-plan
+        name: Restore immutable plan for retry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        id: restore
+      - run: |
+          targets="$REQUESTED_TARGETS"
+          if [ "$EVENT_NAME" = push ]; then targets="$AUTOMATIC_TARGETS"; fi
+          python scripts/release.py plan --channel dev --targets "$targets"
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TARGETS: ${{ inputs.targets }}
+          AUTOMATIC_TARGETS: ${{ vars.HAUNT_DEV_TARGETS || 'linux-x64' }}
+          EVENT_NAME: ${{ github.event_name }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-plan
+          path: release/plan.json
+          if-no-files-found: error
+          retention-days: 30
+        if: steps.restore.outputs.restored != 'true'
+      - run: python scripts/release.py reserve
+        name: Reserve development prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      channel: dev
+      desktop: ${{ needs.prepare.outputs.desktop }}
+      services: ${{ needs.prepare.outputs.services }}
+      has_desktop: ${{ fromJSON(needs.prepare.outputs.has_desktop) }}
+      has_services: ${{ fromJSON(needs.prepare.outputs.has_services) }}
+      has_web: ${{ fromJSON(needs.prepare.outputs.has_web) }}

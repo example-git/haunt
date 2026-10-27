@@ -1,0 +1,330 @@
+name: Hub stable release
+"on":
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version increment
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      version:
+        description: Optional explicit X.Y.Z version
+        type: string
+        required: false
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: hub-stable-release
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      desktop: ${{ steps.plan.outputs.desktop }}
+      services: ${{ steps.plan.outputs.services }}
+      has_desktop: ${{ steps.plan.outputs.has_desktop }}
+      has_services: ${{ steps.plan.outputs.has_services }}
+      has_web: ${{ steps.plan.outputs.has_web }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - run: python scripts/check-release-setup.py
+        name: Validate stable release configuration
+        env:
+          HAUNT_UPDATE_PRIVATE_KEY: ${{ secrets.HAUNT_UPDATE_PRIVATE_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HAUNT_DEPLOY_SSH_KEY: ${{ secrets.HAUNT_DEPLOY_SSH_KEY }}
+          HAUNT_DEPLOY_KNOWN_HOSTS: ${{ secrets.HAUNT_DEPLOY_KNOWN_HOSTS }}
+          HAUNT_SERVER_DEPLOYMENT: ${{ vars.HAUNT_SERVER_DEPLOYMENT }}
+          HAUNT_SYNC_DEPLOYMENT: ${{ vars.HAUNT_SYNC_DEPLOYMENT }}
+      - run: python scripts/release.py restore-plan
+        name: Restore immutable plan for retry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        id: restore
+      - run: python scripts/release.py plan --channel stable --bump "$BUMP" --version "$VERSION"
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ inputs.bump }}
+          VERSION: ${{ inputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-plan
+          path: release/plan.json
+          if-no-files-found: error
+          retention-days: 30
+        if: steps.restore.outputs.restored != 'true'
+      - run: python scripts/release.py reserve
+        name: Reserve stable version
+        env:
+          GH_TOKEN: ${{ github.token }}
+  verify:
+    needs: prepare
+    uses: ./.github/workflows/verify.yml
+  build:
+    needs:
+      - prepare
+      - verify
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      channel: stable
+      desktop: ${{ needs.prepare.outputs.desktop }}
+      services: ${{ needs.prepare.outputs.services }}
+      has_desktop: ${{ fromJSON(needs.prepare.outputs.has_desktop) }}
+      has_services: ${{ fromJSON(needs.prepare.outputs.has_services) }}
+      has_web: ${{ fromJSON(needs.prepare.outputs.has_web) }}
+  publish:
+    needs:
+      - prepare
+      - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+          path: release/artifacts
+      - name: Reuse verified release
+        id: restore
+        run: python scripts/release.py restore-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python scripts/release.py assemble
+        name: Verify and sign complete release
+        env:
+          HAUNT_UPDATE_PRIVATE_KEY: ${{ secrets.HAUNT_UPDATE_PRIVATE_KEY }}
+          HAUNT_UPDATE_PUBLIC_KEY: ${{ vars.HAUNT_UPDATE_PUBLIC_KEY }}
+        if: steps.restore.outputs.restored != 'true'
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: python scripts/release.py images
+        name: Publish exact tested container images
+      - run: python scripts/release.py publish
+        name: Publish coordinated downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-release
+          path: release/publish/*
+          if-no-files-found: error
+          retention-days: 30
+        if: steps.restore.outputs.restored != 'true'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: container-provenance-${{ github.run_attempt }}
+          path: release/images.json
+          if-no-files-found: error
+          retention-days: 30
+  web:
+    needs:
+      - prepare
+      - publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-release
+          path: release/publish
+      - run: npm ci
+        working-directory: client
+      - run: |-
+          mkdir -p client/dist-standalone
+          tar -xzf "release/publish/haunt-web-${{ needs.prepare.outputs.version }}.tar.gz" -C client/dist-standalone
+        name: Load verified web build
+      - uses: cloudflare/wrangler-action@v4
+        id: cloudflare
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: client
+          wranglerVersion: 4.151.3
+          command: deploy
+      - run: node scripts/check-standalone-web.mjs "$DEPLOYMENT_URL"
+        name: Verify deployed web build
+        env:
+          DEPLOYMENT_URL: ${{ steps.cloudflare.outputs.deployment-url }}
+        working-directory: client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deployed-web-evidence-${{ github.run_attempt }}
+          path: client/test-results/standalone-web/*
+          if-no-files-found: error
+          retention-days: 30
+  deploy:
+    needs:
+      - prepare
+      - publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        kind:
+          - server
+          - sync
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-release
+          path: release/publish
+      - run: python scripts/deploy-release.py "${{ matrix.kind }}"
+        name: Deploy and verify preserved state
+        env:
+          HAUNT_DEPLOY_SSH_KEY: ${{ secrets.HAUNT_DEPLOY_SSH_KEY }}
+          HAUNT_DEPLOY_KNOWN_HOSTS: ${{ secrets.HAUNT_DEPLOY_KNOWN_HOSTS }}
+          HAUNT_SERVER_DEPLOYMENT: ${{ vars.HAUNT_SERVER_DEPLOYMENT }}
+          HAUNT_SYNC_DEPLOYMENT: ${{ vars.HAUNT_SYNC_DEPLOYMENT }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deployed-${{ matrix.kind }}
+          path: release/${{ matrix.kind }}-deployment.json
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
+  complete:
+    needs:
+      - prepare
+      - publish
+      - deploy
+      - web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/components
+        id: components
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+          path: release
+      - run: python scripts/release.py stamp --directory client
+        name: Stamp build version
+        working-directory: .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-release
+          path: release/publish
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+          path: release/artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: deployed-*
+          path: release/deployed
+      - run: python scripts/release.py activate
+        name: Activate verified stable feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python scripts/verify-deployment.py
+        name: Verify public services, web assets and all downloads
+        env:
+          HAUNT_SERVER_DEPLOYMENT: ${{ vars.HAUNT_SERVER_DEPLOYMENT }}
+          HAUNT_SYNC_DEPLOYMENT: ${{ vars.HAUNT_SYNC_DEPLOYMENT }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: python scripts/release.py promote
+        name: Promote verified container manifests
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-deployment-evidence-${{ github.run_attempt }}
+          path: |-
+            release/*-verification.json
+            release/*-deployment.json
+            release/images.json
+          if-no-files-found: error
+          retention-days: 30
+      - run: python scripts/release.py summary
+        name: Record release completion
+        env:
+          GH_TOKEN: ${{ github.token }}

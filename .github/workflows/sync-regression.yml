@@ -15,6 +15,9 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - uses: ./.github/actions/components
       - name: Read hosted client origin
         run: |
@@ -26,7 +29,7 @@ jobs:
           cache-dependency-path: sync/go.sum
       - uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
