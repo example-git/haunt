@@ -1,9 +1,11 @@
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -44,6 +46,101 @@ class DeploymentTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             remote.atomic_file(source, target)
         self.assertEqual((self.root / "current.haunt-release").read_bytes(), b"another writer")
+
+    def test_feed_setting_preserves_unrelated_environment_bytes(self):
+        manifest = "https://github.com/example-git/haunt/releases/download/v0.17.14/haunt-updates.json"
+        original = b'PRIVATE_SETTING="keep # this"\r\n HAUNT_CLIENT_UPDATE_MANIFEST_URL ="https://old.example.test/updates.json"\r\nOTHER=unchanged'
+        expected = original.replace(b'"https://old.example.test/updates.json"', manifest.encode())
+        self.assertEqual(remote.server_environment(original, manifest), expected)
+        self.assertEqual(remote.server_environment(expected, manifest), expected)
+        original = b"PRIVATE_SETTING=unchanged\r\nOTHER=also-unchanged"
+        self.assertEqual(remote.server_environment(original, manifest), original + b"\r\nHAUNT_CLIENT_UPDATE_MANIFEST_URL=" + manifest.encode() + b"\r\n")
+
+    def test_server_feed_selection_and_startup_failure_preserve_configuration(self):
+        for outcome in ["success", "startup-failure", "schema-advanced"]:
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory(dir=self.root) as temporary:
+                root = Path(temporary)
+                data = root / "data"
+                data.mkdir()
+                (data / "settings.json").write_bytes(b'{"private":"preserved"}')
+                environment, binary = root / "service.env", root / "haunt"
+                old_environment = b"PRIVATE_SETTING=preserved\nHAUNT_CLIENT_UPDATE_MANIFEST_URL=https://old.example.test/updates.json\n"
+                environment.write_bytes(old_environment)
+                environment.chmod(0o640)
+                binary.write_bytes(b"previous binary")
+                stage = root / "stage"
+                publish = stage / "publish"
+                publish.mkdir(parents=True)
+                source = publish / "haunt-server-linux-amd64"
+                source.write_bytes(b"next binary")
+                marker = {"version": "0.17.14"}
+                with tarfile.open(publish / "haunt-app-linux-amd64.tar.gz", "w:gz") as archive:
+                    payload = json.dumps(marker).encode()
+                    item = tarfile.TarInfo("web/haunt-build.json")
+                    item.size = len(payload)
+                    archive.addfile(item, io.BytesIO(payload))
+                plan = {"version": "0.17.14", "repository": "example-git/haunt", "tag": "v0.17.14"}
+                config = {"binary": str(binary), "data": str(data), "environment_file": str(environment), "service": "fixture", "database_container": "fixture-db", "database_port": 32768, "arch": "amd64", "local_origin": "http://127.0.0.1:8080", "web_origin": "https://web.example.test", "preserved_files": [str(environment)]}
+                manifest = "https://github.com/example-git/haunt/releases/download/v0.17.14/haunt-updates.json"
+                expected_environment = old_environment.replace(b"https://old.example.test/updates.json", manifest.encode())
+                read_bytes = Path.read_bytes
+                digest = remote.digest
+                running = [True]
+                def environment_bytes(path):
+                    if str(path) == "/proc/123/environ":
+                        value = next(line.split(b"=", 1)[1] for line in read_bytes(environment).splitlines() if line.startswith(b"HAUNT_CLIENT_UPDATE_MANIFEST_URL="))
+                        return b"HAUNT_DATABASE_URL=postgres://fixture@127.0.0.1:32768/fixture\0HAUNT_INSTANCE_ID=fixture\0HAUNT_CLIENT_UPDATE_MANIFEST_URL=" + value + b"\0"
+                    return read_bytes(path)
+                def command(*args, **kwargs):
+                    if args[:2] == ("systemctl", "show"):
+                        key = next(a.removeprefix("--property=") for a in args if a.startswith("--property="))
+                        return {"MainPID": "123", "ActiveState": "active", "NRestarts": "0"}[key]
+                    if args[:2] == ("systemctl", "stop"):
+                        running[0] = False
+                        return ""
+                    if args[:2] == ("systemctl", "start"):
+                        running[0] = True
+                        return ""
+                    if args[:2] == ("docker", "port"):
+                        return "127.0.0.1:32768"
+                    if "psql" in args:
+                        query = args[-1]
+                        if "max(version)" in query:
+                            return "2" if outcome == "schema-advanced" and read_bytes(binary) == b"next binary" else "1"
+                        return json.dumps({"role": 7} if "roles" in query else {"singleton": True})
+                    if "pg_restore" in args:
+                        return "schema_migrations"
+                    if args[0] == "tar":
+                        Path(args[args.index("-cpf") + 1]).write_bytes(b"data backup")
+                        return ""
+                    if args == (str(source), "-version"):
+                        return plan["version"]
+                    raise AssertionError(args)
+                def dump(*args, **kwargs):
+                    kwargs["stdout"].write(b"database backup")
+                    return subprocess.CompletedProcess(args, 0)
+                def read(origin, route, headers=None):
+                    value = {"status": "ok"} if route == "/readyz" else marker if route == "/haunt-build.json" else {"instance_id": "fixture"}
+                    return value, {"Access-Control-Allow-Origin": config["web_origin"]}
+                def ready(check):
+                    result = check()
+                    self.assertEqual(environment.read_bytes(), expected_environment)
+                    if outcome != "success":
+                        raise RuntimeError("new service failed")
+                    return result
+                with patch.object(Path, "read_bytes", new=environment_bytes), patch.object(remote, "digest", side_effect=lambda path: digest(binary if str(path) == "/proc/123/exe" else path)), patch.object(remote, "run", side_effect=command), patch.object(remote.subprocess, "run", side_effect=dump), patch.object(remote, "read", side_effect=read), patch.object(remote, "ready", side_effect=ready):
+                    if outcome == "success":
+                        result = remote.server(stage, config, plan)
+                        self.assertEqual(result["manifest_url"], manifest)
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, "new service failed"):
+                            remote.server(stage, config, plan)
+                self.assertTrue(running[0])
+                self.assertEqual(environment.read_bytes(), expected_environment if outcome == "success" else old_environment)
+                self.assertEqual(environment.stat().st_mode & 0o777, 0o640)
+                self.assertEqual(binary.read_bytes(), b"previous binary" if outcome == "startup-failure" else b"next binary")
+                self.assertEqual((stage / "rollback/config-0").read_bytes(), old_environment)
+                self.assertEqual((data / "settings.json").read_bytes(), b'{"private":"preserved"}')
 
     def test_sync_failure_restores_original_image_pin_and_configuration(self):
         compose = self.root / "compose"

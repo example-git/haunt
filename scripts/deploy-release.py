@@ -19,13 +19,13 @@ def validate_config(config):
             raise ValueError("Deployment " + name + " must be user@host")
     if type(config.get("ssh_port", 22)) is not int or not 1 <= config.get("ssh_port", 22) <= 65535:
         raise ValueError("Deployment ssh_port must be between 1 and 65535")
-    required = ["binary", "data", "local_origin", "service", "database_port", "database_container", "arch", "preserved_files", "web_origin", "public_origins"] if config["kind"] == "server" else ["compose_directory", "container", "project", "updates_directory", "public_origins"]
+    required = ["binary", "data", "environment_file", "local_origin", "service", "database_port", "database_container", "arch", "preserved_files", "web_origin", "public_origins"] if config["kind"] == "server" else ["compose_directory", "container", "project", "updates_directory", "public_origins"]
     for key in required:
         if key not in config or config[key] in [None, "", []]:
             raise ValueError("Missing deployment configuration: " + key)
     if not config["public_origins"] or any(not re.fullmatch(r"https://[A-Za-z0-9.-]+", value) for value in config["public_origins"]):
         raise ValueError("Public deployment origins must use HTTPS")
-    for key in ["binary", "data", "compose_directory", "updates_directory"]:
+    for key in ["binary", "data", "environment_file", "compose_directory", "updates_directory"]:
         if key in config and (not Path(config[key]).is_absolute() or ".." in Path(config[key]).parts):
             raise ValueError("Deployment paths must be absolute")
     if config["kind"] == "server":
@@ -33,6 +33,8 @@ def validate_config(config):
             raise ValueError("Invalid server deployment architecture or database port")
         if not all(Path(p).is_absolute() for p in config["preserved_files"]):
             raise ValueError("Preserved configuration paths must be absolute")
+        if config["environment_file"] not in config["preserved_files"]:
+            raise ValueError("The service environment must be included in preserved_files")
     return config
 
 
