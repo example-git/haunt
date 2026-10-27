@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import copy
 import importlib.util
 import json
@@ -262,8 +263,8 @@ class ReleaseTests(unittest.TestCase):
             else:
                 (folder / (target + ".bin")).write_bytes(target.encode())
             release.describe(self.plan, target, folder)
-        with patch.object(release, "ROOT", self.root), patch.dict(os.environ, HAUNT_UPDATE_PRIVATE_KEY=key.decode()):
-            release.assemble(self.plan, artifacts, self.root / "publish")
+        with patch.object(release, "ROOT", self.root), patch.dict(os.environ, HAUNT_UPDATE_PRIVATE_KEY=key.decode()), contextlib.chdir(self.root):
+            release.assemble(self.plan, Path("artifacts"), Path("publish"))
         envelope = json.loads((self.root / "publish/haunt-updates.json").read_text())
         check = "const fs=require('node:fs'),v=require(process.argv[1]);const e=JSON.parse(fs.readFileSync(process.argv[2])),c=JSON.parse(fs.readFileSync(process.argv[3]));for(const t of ['win32-x64','linux-x64','linux-arm64','darwin-arm64'])if(v.verifyManifest(e,c,...t.split('-')).version!=='0.17.9')throw Error('version')"
         subprocess.run(["node", "-e", check, str(client / "apps/desktop/updates.cjs"), str(self.root / "publish/haunt-updates.json"), str(client / "static/updates.json")], check=True)
