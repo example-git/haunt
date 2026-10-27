@@ -255,7 +255,7 @@ def assemble(plan, directory, output):
     if plan["channel"] != "stable":
         raise ValueError("Only stable releases can create update feeds")
     found = verify_artifacts(plan, directory)
-    output = Path(output)
+    output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     client = output / ".client"
     client.mkdir(exist_ok=True)
