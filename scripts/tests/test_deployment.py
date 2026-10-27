@@ -90,9 +90,24 @@ class DeploymentTests(unittest.TestCase):
     def test_invalid_deployment_targets_fail_before_ssh(self):
         config = {"kind": "sync", "ssh_target": "deploy@example.test", "compose_directory": "/srv/haunt/sync", "container": "nexus", "project": "haunt", "updates_directory": "/srv/haunt/updates", "public_origins": ["https://nexus.example.test"]}
         self.assertEqual(transport.validate_config(config), config)
-        for update in [{"ssh_target": "deploy@host;echo unsafe"}, {"compose_directory": "relative"}, {"public_origins": ["http://example.test"]}, {"updates_directory": ""}]:
+        for update in [{"ssh_target": "deploy@host;echo unsafe"}, {"jump_host": "deploy@host;echo unsafe"}, {"ssh_port": 0}, {"ssh_port": True}, {"ssh_port": "22"}, {"compose_directory": "relative"}, {"public_origins": ["http://example.test"]}, {"updates_directory": ""}]:
             with self.assertRaises(ValueError):
                 transport.validate_config({**config, **update})
+
+    def test_private_deployment_routes_keep_authentication_and_host_pinning(self):
+        import shlex
+        config = {"kind": "sync", "ssh_target": "root@127.0.0.1", "compose_directory": "/srv/haunt/sync", "container": "nexus", "project": "haunt", "updates_directory": "/srv/haunt/updates", "public_origins": ["https://nexus.example.test"]}
+        direct = transport.ssh_command(config, "/private/release key", "/private/pinned hosts")
+        self.assertEqual(direct[-3:], ["-p", "22", "root@127.0.0.1"])
+        self.assertFalse(any(arg.startswith("ProxyCommand=") for arg in direct))
+        routed = transport.ssh_command({**config, "jump_host": "deploy@gateway.example.test", "ssh_port": 22222}, "/private/release key", "/private/pinned hosts")
+        proxy = shlex.split(next(arg.removeprefix("ProxyCommand=") for arg in routed if arg.startswith("ProxyCommand=")))
+        self.assertEqual(proxy[-3:], ["-W", "%h:%p", "deploy@gateway.example.test"])
+        self.assertEqual(routed[-3:], ["-p", "22222", "root@127.0.0.1"])
+        for command in [direct, routed, proxy]:
+            self.assertIn("StrictHostKeyChecking=yes", command)
+            self.assertIn("UserKnownHostsFile=/private/pinned hosts", command)
+            self.assertEqual(command[command.index("-i") + 1], "/private/release key")
 
 
 if __name__ == "__main__":

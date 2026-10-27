@@ -1,0 +1,29 @@
+name: Verify hub release setup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  setup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - uses: ./.github/actions/components
+      - name: Verify credentials and deployment connections
+        run: python scripts/check-release-setup.py --connections
+        env:
+          HAUNT_UPDATE_PRIVATE_KEY: ${{ secrets.HAUNT_UPDATE_PRIVATE_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HAUNT_DEPLOY_SSH_KEY: ${{ secrets.HAUNT_DEPLOY_SSH_KEY }}
+          HAUNT_DEPLOY_KNOWN_HOSTS: ${{ secrets.HAUNT_DEPLOY_KNOWN_HOSTS }}
+          HAUNT_SERVER_DEPLOYMENT: ${{ vars.HAUNT_SERVER_DEPLOYMENT }}
+          HAUNT_SYNC_DEPLOYMENT: ${{ vars.HAUNT_SYNC_DEPLOYMENT }}

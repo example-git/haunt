@@ -14,8 +14,11 @@ from release import ROOT, load_plan, write
 def validate_config(config):
     if config.get("kind") not in {"server", "sync"}:
         raise ValueError("Deployment kind must be server or sync")
-    if not re.fullmatch(r"[a-z_][a-z0-9_-]*@[A-Za-z0-9][A-Za-z0-9.-]*", config.get("ssh_target", "")):
-        raise ValueError("Deployment ssh_target must be user@host")
+    for name in ["ssh_target", "jump_host"]:
+        if (name == "ssh_target" or name in config) and not re.fullmatch(r"[a-z_][a-z0-9_-]*@[A-Za-z0-9][A-Za-z0-9.-]*", config.get(name, "")):
+            raise ValueError("Deployment " + name + " must be user@host")
+    if type(config.get("ssh_port", 22)) is not int or not 1 <= config.get("ssh_port", 22) <= 65535:
+        raise ValueError("Deployment ssh_port must be between 1 and 65535")
     required = ["binary", "data", "local_origin", "service", "database_port", "database_container", "arch", "preserved_files", "web_origin", "public_origins"] if config["kind"] == "server" else ["compose_directory", "container", "project", "updates_directory", "public_origins"]
     for key in required:
         if key not in config or config[key] in [None, "", []]:
@@ -31,6 +34,13 @@ def validate_config(config):
         if not all(Path(p).is_absolute() for p in config["preserved_files"]):
             raise ValueError("Preserved configuration paths must be absolute")
     return config
+
+
+def ssh_command(config, key, hosts):
+    validate_config(config)
+    connection = ["ssh", "-F", "/dev/null", "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=20", "-o", "UserKnownHostsFile=" + str(hosts), "-i", str(key)]
+    proxy = ["-o", "ProxyCommand=" + shlex.join([*connection, "-W", "%h:%p", config["jump_host"]])] if "jump_host" in config else []
+    return [*connection, *proxy, "-p", str(config.get("ssh_port", 22)), config["ssh_target"]]
 
 
 def main():
@@ -55,7 +65,7 @@ def main():
         (temp / "key").write_text(key + "\n")
         (temp / "key").chmod(0o600)
         (temp / "known_hosts").write_text(hosts + "\n")
-        ssh = ["ssh", "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes", "-o", "StrictHostKeyChecking=yes", "-o", "UserKnownHostsFile=" + str(temp / "known_hosts"), "-i", str(temp / "key"), config["ssh_target"]]
+        ssh = ssh_command(config, temp / "key", temp / "known_hosts")
         write(temp / "deployment.json", config)
         archive = temp / "deploy.tar.gz"
         with tarfile.open(archive, "w:gz") as bundle:

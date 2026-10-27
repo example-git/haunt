@@ -136,6 +136,18 @@ configured external release source. `web_origin` must match
 GitHub configuration and on their hosts. The release checks configuration before
 starting expensive builds; missing credentials cannot silently skip deployment.
 
+Deployment connections default to SSH port 22. A LAN host reached through a
+gateway can set `ssh_port` and `jump_host` (`user@host`). Both connections use the
+deployment key and pinned host keys. A reverse SSH relay must listen only on the
+gateway's loopback interface; pin the destination key under its forwarded
+`[host]:port` address. Keep the relay key separate from the deployment key and
+restrict it to that listener.
+
+Run **Verify hub release setup** from `main` after configuring or rotating
+credentials. It checks the signing key, hosted web authentication, both SSH
+connections, and the existing service prerequisites. It does not publish builds,
+change update feeds, or restart application services.
+
 ## Local validation
 
 ```sh

@@ -13,7 +13,7 @@ from release import ROOT, load_plan, write
 
 
 def request(url, headers=None):
-    return urllib.request.urlopen(urllib.request.Request(url, headers={"Cache-Control": "no-cache", **(headers or {})}), timeout=60)
+    return urllib.request.urlopen(urllib.request.Request(url, headers={"Cache-Control": "no-cache", "User-Agent": "HauntReleaseVerifier/1", **(headers or {})}), timeout=60)
 
 
 def read(url, headers=None):
