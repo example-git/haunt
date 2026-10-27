@@ -1,0 +1,62 @@
+name: Synchronize component pins
+on:
+  push:
+    branches: [main, dev]
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: ${{ fromJSON(github.event_name == 'push' && format('["{0}"]', github.ref_name) || '["main","dev"]') }}
+    concurrency:
+      group: component-pins-${{ matrix.branch }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ matrix.branch }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check remote component branches
+        id: remote
+        run: python scripts/sync-pins.py --branch "$PIN_BRANCH" --check-remote
+        env:
+          PIN_BRANCH: ${{ matrix.branch }}
+      - uses: actions/checkout@v5
+        if: github.event_name != 'schedule' || steps.remote.outputs.needed == 'true'
+        with:
+          repository: example-git/haunt-server
+          ref: ${{ matrix.branch }}
+          path: server
+          fetch-depth: 0
+          ssh-key: ${{ secrets.HAUNT_SERVER_PIN_KEY }}
+      - name: Coordinate and publish exact source pins
+        if: github.event_name != 'schedule' || steps.remote.outputs.needed == 'true'
+        id: sync
+        run: python scripts/sync-pins.py --branch "$PIN_BRANCH" --push
+        env:
+          PIN_BRANCH: ${{ matrix.branch }}
+      - name: Validate updated pins and build selected development targets
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PIN_BRANCH: ${{ matrix.branch }}
+          DEV_TARGETS: ${{ vars.HAUNT_DEV_TARGETS || 'linux-x64' }}
+        run: |
+          gh workflow run check.yml --ref "$PIN_BRANCH"
+          if [ "$PIN_BRANCH" = dev ]; then
+            gh workflow run dev.yml --ref dev -f targets="$DEV_TARGETS"
+          else
+            gh workflow run sync-regression.yml --ref main
+          fi
