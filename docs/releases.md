@@ -37,6 +37,8 @@ Start **Hub stable release** from `main`. Select patch, minor, major, or provide
 an explicit higher `X.Y.Z` version. The workflow reserves a draft hub release,
 records exact gitlink revisions, and stamps package versions in build checkouts.
 It does not create generated version commits in component branches.
+Before starting builds, it verifies the signing key, hosted web authentication,
+deployment connections, and existing service prerequisites.
 
 Desktop manifests retain the `example-git/haunt-client` publisher identity and
 existing Ed25519 trust key. Hosting their signed bytes in the hub does not change

@@ -42,6 +42,7 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 release.stable_tuple(value)
 
+    @patch.dict(os.environ, GITHUB_REF="refs/heads/main")
     def test_saved_plan_retry_never_reselects_moving_sources_or_version(self):
         file = self.root / "plan.json"
         release.write(file, self.plan)
@@ -53,6 +54,15 @@ class ReleaseTests(unittest.TestCase):
         with patch.object(release, "run", return_value="f" * 40):
             with self.assertRaisesRegex(ValueError, "different source"):
                 release.plan_release(args)
+
+    def test_stable_plans_require_main_before_accessing_sources_or_releases(self):
+        args = argparse.Namespace(channel="stable", plan=str(self.root / "plan.json"), version="", targets="", bump="patch")
+        for ref in ["refs/heads/dev", "refs/heads/feature", "refs/tags/v0.17.9", ""]:
+            with patch.dict(os.environ, GITHUB_REF=ref), patch.object(release, "run") as run:
+                with self.assertRaisesRegex(ValueError, "must run from main"):
+                    release.plan_release(args)
+                run.assert_not_called()
+            self.assertFalse(Path(args.plan).exists())
 
     def test_retry_reuses_only_the_original_target_artifact(self):
         plan = {**self.plan, "targets": ["web"]}
