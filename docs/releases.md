@@ -5,6 +5,28 @@ publication, and deployment. Work is integrated on `dev` and squash-promoted to
 `main` before a stable release. Component repositories run their regressions;
 they do not independently bump versions, publish stable images, or deploy web.
 
+## Component pins
+
+**Synchronize component pins** runs after hub pushes and checks remote component
+branches on a five-minute schedule. Client, server and Nexus follow the matching
+hub `main` or `dev` branch. RNNoise and the TTS extension follow their explicit
+`main` branches. Tracking is configured in `.gitmodules`.
+
+The synchronizer updates the server's embedded client and bundled RNNoise files,
+then commits matching hub gitlinks and regenerated documentation. Deleted source
+documents remove their mirrored copies. Pushes use normal fast-forward checks;
+concurrent changes are preserved. Unchanged pins do not create commits.
+
+Bot pin commits explicitly start source checks and selected development builds.
+They do not trigger a stable release. Existing release plans retain their recorded
+revisions. Component commits pushed from a local checkout follow the same path as
+remote edits. For a clean local checkout, run
+`python3 scripts/sync-pins.py --branch dev --push` to synchronize immediately.
+
+The hub's `HAUNT_SERVER_PIN_KEY` secret is a write-enabled deploy key scoped to
+`haunt-server`; the hub uses its own workflow token for hub commits. Feature work
+continues through the existing dev-to-main squash flow.
+
 ## Development
 
 **Hub development prerelease** runs on hub `dev` pushes or manual dispatch.

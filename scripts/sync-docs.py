@@ -26,6 +26,8 @@ def main():
             if path.is_file() and path.suffix in {".md", ".json"}:
                 mapping[path.resolve()] = destination / path.relative_to(base / "docs")
         mapping[(base / "README.md").resolve()] = destination / "index.md"
+    index = ROOT / "docs/sources.json"
+    previous = json.loads(index.read_text()) if index.is_file() else {}
     sources = {}
     failed = []
     for path, destination in sorted(mapping.items()):
@@ -78,7 +80,15 @@ def main():
         else:
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(content)
-    index = ROOT / "docs/sources.json"
+    for name in previous.keys() - sources.keys():
+        obsolete = (ROOT / name).resolve()
+        if not any(obsolete.is_relative_to(ROOT / "docs" / part) for part in ["client", "server", "plugins/rnnoise"]):
+            raise ValueError("Unexpected mirrored documentation path: " + name)
+        if obsolete.exists():
+            if args.check:
+                failed.append(name)
+            else:
+                obsolete.unlink()
     content = (json.dumps(sources, indent=2, sort_keys=True) + "\n").encode()
     if args.check:
         if not index.is_file() or index.read_bytes() != content:
