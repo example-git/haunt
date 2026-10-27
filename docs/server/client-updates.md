@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/2805dc12ee614d639073016b801f704522c917cd/docs/client-updates.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/b79ea54e526960bb766f87810c4499dc670a899b/docs/client-updates.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop client distribution
 
@@ -7,7 +7,7 @@ clients. Set one source in the service environment:
 
 ```sh
 # External manifest; this takes precedence over the local flags.
-HAUNT_CLIENT_UPDATE_MANIFEST_URL=https://downloads.example.test/haunt-updates.json
+HAUNT_CLIENT_UPDATE_MANIFEST_URL=https://github.com/example-git/haunt/releases/latest/download/haunt-updates.json
 
 # Alternatively, omit the URL and enable the private local mirror.
 HAUNT_CLIENT_UPDATE_LOCAL=true
@@ -20,6 +20,9 @@ The instance response advertises the configured source. Local endpoints require
 a signed-in account. Version/platform are reported at update checks; downloading
 is bounded to four concurrent transfers with per-account rate limits. No GitHub
 credentials reach clients and update files are separate from message storage.
+
+GitHub download links follow the hub's `vX.Y.Z` tags or the legacy client's
+`client-vX.Y.Z` tags. Hub deployments select the exact published release manifest.
 
 Use `scripts/install-client-release.py --directory <data>/client-updates
 --public-key /protected/update-public.pem` with a release tar.gz on stdin.
