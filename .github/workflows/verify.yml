@@ -29,7 +29,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: client-regression-evidence
+          name: client-regression-evidence-${{ github.run_attempt }}
           path: client/test-results/
           retention-days: 14
     defaults:
@@ -152,7 +152,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: server-regression-evidence
+          name: server-regression-evidence-${{ github.run_attempt }}
           path: "server/test-results/
 
             server/client/test-results/"
@@ -212,7 +212,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sync-regression-evidence
+          name: sync-regression-evidence-${{ github.run_attempt }}
           path: client/test-results/
           if-no-files-found: ignore
       - name: Remove only this job's fixture
