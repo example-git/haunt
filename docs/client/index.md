@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 ![Haunt](../../assets/haunt-wordmark.png)
 
@@ -36,7 +36,7 @@ This client does not federate accounts or messages between independent services.
 | Linux x64 and arm64 | Electron / AppImage or Fedora RPM |
 | macOS arm64 | Electron / DMG, native capture helpers |
 
-An Android client is not yet shipped; see [Android integration](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/ANDROID.md).
+An Android client is not yet shipped; see [Android integration](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/ANDROID.md).
 macOS builds target Apple Silicon.
 
 ### macOS installation
@@ -135,12 +135,12 @@ See the [sync guide](sync.md) for encrypted synchronization and recovery.
 - [Text to speech](narrator.md)
 - [Audio plugin authoring](audio-plugin-authoring.md)
 - [Standalone web hosting](web-hosting.md)
-- [Development and release qualification](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/VERIFICATION.md)
+- [Development and release qualification](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/VERIFICATION.md)
 - [Project hub and screenshots](https://github.com/example-git/haunt)
 
 ## License and participation
 
 Haunt-owned code in this repository is available under the
-[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/LICENSE). Bundled third-party assets retain their own
-notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/CONTRIBUTING.md) before submitting changes and
-[SECURITY.md](https://github.com/example-git/haunt-client/blob/f027fe9a90d619e2e94d88cbc962d1aaad614056/SECURITY.md) for private vulnerability reports.
+[BSD 3-Clause License](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/LICENSE). Bundled third-party assets retain their own
+notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](https://github.com/example-git/haunt-client/blob/0af785ad49dcabc763464ac502c295fbb9d3e718/SECURITY.md) for private vulnerability reports.
