@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/37a07b18a35fea75778aa61559ceb99ebfe1c67e/docs/client-native-capture.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/4f311b9ea4d83b2589804df8e9a6d15529d21926/docs/client-native-capture.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop native capture
 
