@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/08460522711f9bcf5bc9e8840106c078c5d70d94/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/37a07b18a35fea75778aa61559ceb99ebfe1c67e/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Generated HTTP endpoints
 
