@@ -1,6 +1,6 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/docs/container.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/docs/container.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
-For the published image and first-login instructions, use the [central installation guide](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/installation.md). The detailed source-build and runtime guide follows.
+For the published image and first-login instructions, use the [central installation guide](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/installation.md). The detailed source-build and runtime guide follows.
 
 # One-container installation
 

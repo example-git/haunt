@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/README.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 ![Haunt](../../assets/haunt-wordmark.png)
 
@@ -83,7 +83,7 @@ PostgreSQL and the Haunt server, with automatic HTTPS and a persistent data
 volume. Follow the [container quick start](container.md). Linux amd64 and
 arm64 are supported; the standalone binary workflow below is also available.
 
-Use [.env.example](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/.env.example) as the configuration reference. Supply a dedicated
+Use [.env.example](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/.env.example) as the configuration reference. Supply a dedicated
 PostgreSQL database and a persistent data directory, then start the binary. On a
 fresh installation, open the private setup link printed at startup. The wizard runs
 on the same listener as the client/API, guides you through the server address and
@@ -135,6 +135,6 @@ are used only to explain familiar behavior and interoperability.
 ## License and participation
 
 Haunt-owned code in this repository is available under the
-[BSD 3-Clause License](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/LICENSE). Bundled third-party material retains its own
-licenses and notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/CONTRIBUTING.md) before submitting
-changes and [SECURITY.md](https://github.com/example-git/haunt-server/blob/ef932d6dede908995e70e18b33721cdf682b677b/SECURITY.md) for private vulnerability reports.
+[BSD 3-Clause License](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/LICENSE). Bundled third-party material retains its own
+licenses and notices. See [CONTRIBUTING.md](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/CONTRIBUTING.md) before submitting
+changes and [SECURITY.md](https://github.com/example-git/haunt-server/blob/020ea5b268d107344936a0bf9e66cf4c1180c24d/SECURITY.md) for private vulnerability reports.
