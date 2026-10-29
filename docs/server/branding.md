@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5edd213e2e78325fd58298dda7a81b1183b2edea/docs/branding.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/9f29155fd47c76e49340c558ff334988046efcbf/docs/branding.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt branding
 
