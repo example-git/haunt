@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/d73dd0ae7da345e0df087ec5137a2cb2b7be0288/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/16107786537af6b3816d463f579b3f2ad1647a0b/docs/releases.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Desktop releases and updates
 
