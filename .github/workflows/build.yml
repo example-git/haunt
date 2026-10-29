@@ -89,8 +89,15 @@ jobs:
           sudo apt-get update && sudo apt-get install -y --no-install-recommends rpm libpulse-dev libglib2.0-dev
           libx11-dev libxrandr-dev libxcomposite-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-tools
           gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-pipewire
+          libpipewire-0.3-dev pipewire ffmpeg
       - run: npm run electron:stage
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - name: Exercise production Linux capture code
+        if: ${{ steps.restore.outputs.restored != 'true' && matrix.platform == 'linux' }}
+        run: |
+          python3 scripts/check-linux-capture-code.py --build
+          mv test-results/capture-code test-results/capture-code-ubuntu
+          docker run --rm -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash -c 'dnf install -y pipewire pipewire-utils python3 ffmpeg-free && python3 scripts/check-linux-capture-code.py --minimum-pipewire 1.5.81'
       - run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - run: npm run electron:check
@@ -173,6 +180,7 @@ jobs:
             client/test-results/mac-local-update.json
             client/test-results/mac-installer.log
             client/test-results/mac-keychain-consent.json
+            client/test-results/capture-code*/**
           retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
       - name: Remove native test signing keychain
         if: ${{ steps.restore.outputs.restored != 'true' && (always() && matrix.platform == 'mac') }}
