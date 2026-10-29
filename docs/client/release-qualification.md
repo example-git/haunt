@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/16107786537af6b3816d463f579b3f2ad1647a0b/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/7550c6ee01032f3bbe0572201cc8ae73b2b866e2/docs/release-qualification.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Release qualification
 
@@ -30,6 +30,15 @@ verify that loaded GStreamer libraries come from its private runtime despite
 conflicting inherited plugin paths. Linux x64 also verifies Selkies runtime hashes
 and compiles a kernel with bundled NVRTC; this does not verify GPU encoding. `linux-runtime-install-*` records the runtime hashes,
 installer selection and capture results on x64 and ARM64.
+
+Native capture code checks compile the production worker into a test executable
+and connect it to real video streams on a private PipeWire server. They check
+small buffer pools, padded rows, RGB formats, portrait and wide frames, live
+reconfiguration, and failure diagnostics. H.264 packets must decode to the
+source's changing pixels with the expected dimensions and advancing timestamps.
+The bundled runtime runs against Ubuntu's PipeWire and a newer Fedora server;
+`capture-code*` artifacts retain source/worker logs, encoded streams and results.
+These software checks do not verify physical NVIDIA encoding or DMA-BUF capture.
 
 The Wayland capture workflow uses a software-rendered Sway session and a pinned
 portal backend with the pending upstream [capture-lifetime fix](https://github.com/emersion/xdg-desktop-portal-wlr/pull/407).
