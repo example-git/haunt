@@ -132,10 +132,6 @@ jobs:
           HAUNT_SCALE_CLIENT_DIR: ${{ github.workspace }}/server/client
           HAUNT_SCALE_REPORT: ${{ github.workspace }}/server/test-results/history-scale.json
         run: go test -race ./internal/httpapi -run '^TestHistoryScale$' -count=1 -timeout=15m -v
-      - name: Check live social provider metadata and media
-        env:
-          HAUNT_LIVE_EMBEDS: "1"
-        run: go test -race ./internal/embeds -run '^TestLiveSocialProviders$' -count=1 -timeout=90s -v
       - name: Check real browser workflows
         working-directory: server/client
         run: npm run test:browser

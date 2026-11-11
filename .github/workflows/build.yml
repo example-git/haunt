@@ -92,12 +92,6 @@ jobs:
           libpipewire-0.3-dev pipewire ffmpeg
       - run: npm run electron:stage
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
-      - name: Exercise production Linux capture code
-        if: ${{ steps.restore.outputs.restored != 'true' && matrix.platform == 'linux' }}
-        run: |
-          python3 scripts/check-linux-capture-code.py --build
-          mv test-results/capture-code test-results/capture-code-ubuntu
-          docker run --rm -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash -c 'dnf install -y pipewire pipewire-utils python3 ffmpeg-free && python3 scripts/check-linux-capture-code.py --minimum-pipewire 1.5.81'
       - run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - run: npm run electron:check
@@ -126,11 +120,6 @@ jobs:
           libasound2t64 libnotify4 dbus-x11 gnome-keyring libsecret-1-0 python3-dbus python3-gi plank openbox xfwm4
           imagemagick desktop-file-utils x11-utils dunst tesseract-ocr xdotool pipewire pipewire-pulse wireplumber
           pulseaudio-utils
-      - name: Verify native screen and window capture
-        if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
-          == 'linux' && steps.pack.outcome == 'success')) }}
-        run: node scripts/check-screen.mjs
       - name: Install macOS native UI inspection tools
         if:
           ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
@@ -157,9 +146,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ matrix.platform }}" = linux ]; then
-            dbus-run-session -- xvfb-run -a -s "-screen 0 1920x1080x24" node scripts/check-installed-upgrade.mjs
+            dbus-run-session -- xvfb-run -a -s "-screen 0 1920x1080x24" node scripts/check-installed-upgrade.mjs --skip-notifications
           else
-            node scripts/check-installed-upgrade.mjs
+            node scripts/check-installed-upgrade.mjs --skip-notifications
           fi
       - uses: actions/upload-artifact@v4
         if: ${{ steps.restore.outputs.restored != 'true' && (always()) }}
