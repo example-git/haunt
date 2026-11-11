@@ -192,6 +192,40 @@ def sync_snapshot(container):
     return json.loads(run("docker", "exec", "-i", container, "python3", "-", input=code))
 
 
+def sync_feed(stage, config, plan):
+    inspect = lambda: json.loads(run("docker", "inspect", config["container"]))[0]
+    before = inspect()
+    check(before["Image"] == config["running_image"], "Running sync image changed")
+    labels = json.loads(run("docker", "image", "inspect", before["Image"]))[0]["Config"]["Labels"]
+    check(labels.get("org.opencontainers.image.revision") == plan["components"]["sync"], "Sync source changed; a service deployment is required")
+    check(before["State"]["Running"] and before["State"].get("Health", {}).get("Status") == "healthy", "Sync is not healthy")
+    run("python3", str(stage / "import-sync-updates.py"), str(stage / "publish"), "--destination", config["updates_directory"], "--publisher-config", str(stage / "publisher.json"))
+    after = inspect()
+    check(after["Id"] == before["Id"] and after["Image"] == before["Image"] and after["RestartCount"] == before["RestartCount"] and after["State"]["Running"] and after["State"].get("Health", {}).get("Status") == "healthy", "Sync service changed during feed import")
+    return {"version": plan["version"], "mode": "feed-only", "image": before["Image"], "runtime_version": labels.get("org.opencontainers.image.version"), "source_revision": plan["components"]["sync"], "public_verification": "pending"}
+
+
+def verify_payload(stage, config, plan):
+    directory = stage / "publish"
+    hashes = {}
+    for line in (directory / "SHA256SUMS").read_text().splitlines():
+        expected, name = line.split("  ", 1)
+        check(Path(name).name == name and re.fullmatch(r"[a-f0-9]{64}", expected) and name not in hashes, "Invalid release checksum")
+        hashes[name] = expected
+    names = set(hashes)
+    if config.get("mode") == "feed-only":
+        check(config["kind"] == "sync", "Feed-only deployment requires sync")
+        envelope = json.loads((directory / "haunt-updates.json").read_text())
+        payload = json.loads(base64.b64decode(envelope["payload"], validate=True))
+        check(payload["version"] == plan["version"] and set(payload["targets"]) == {"win32-x64", "linux-x64", "linux-arm64", "darwin-arm64"}, "Sync feed release mismatch")
+        files = [asset["file"] for target in payload["targets"].values() for kind, asset in target.items() if kind in {"asar", "installer", "rpm"}]
+        check(len(files) == 10 and len(set(files)) == 10, "Incomplete sync feed")
+        names = {"haunt-updates.json", *files}
+        check(names <= hashes.keys() and {p.name for p in directory.iterdir()} == names | {"SHA256SUMS"}, "Sync staging file set mismatch")
+    for name in names:
+        check(not (directory / name).is_symlink() and digest(directory / name) == hashes[name], "Release staging hash mismatch")
+
+
 def sync(stage, config, plan):
     directory = Path(config["compose_directory"])
     env_file = directory / ".env"
@@ -265,10 +299,13 @@ def main():
     stage = Path(sys.argv[1]).resolve()
     plan = json.loads((stage / "plan.json").read_text())
     check(plan["channel"] == "stable" and re.fullmatch(r"\d+\.\d+\.\d+", plan["version"]), "Development releases cannot deploy")
-    for line in (stage / "publish/SHA256SUMS").read_text().splitlines():
-        expected, name = line.split("  ", 1)
-        check(Path(name).name == name and digest(stage / "publish" / name) == expected, "Release staging hash mismatch")
     config = json.loads((stage / "deployment.json").read_text())
+    verify_payload(stage, config, plan)
+    if config.get("mode") == "feed-only":
+        result = sync_feed(stage, config, plan)
+        result["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        print(json.dumps(result))
+        return
     completed = stage / "result.json"
     if completed.exists():
         result = json.loads(completed.read_text())

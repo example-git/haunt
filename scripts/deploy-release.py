@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import base64
 import json
 import os
 from pathlib import Path
@@ -45,6 +46,39 @@ def ssh_command(config, key, hosts):
     return [*connection, *proxy, "-p", str(config.get("ssh_port", 22)), config["ssh_target"]]
 
 
+def feed_files(directory, plan):
+    envelope = json.loads((directory / "haunt-updates.json").read_text())
+    payload = json.loads(base64.b64decode(envelope["payload"], validate=True))
+    if payload["version"] != plan["version"] or set(payload["targets"]) != {"win32-x64", "linux-x64", "linux-arm64", "darwin-arm64"}:
+        raise ValueError("Sync feed release mismatch")
+    names = [asset["file"] for target in payload["targets"].values() for kind, asset in target.items() if kind in {"asar", "installer", "rpm"}]
+    if len(names) != 10 or len(set(names)) != 10 or any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,160}", name) for name in names):
+        raise ValueError("Invalid sync feed files")
+    return [directory / name for name in ["haunt-updates.json", "SHA256SUMS", *names]]
+
+
+def select_sync_mode(config, plan, ssh):
+    image = subprocess.check_output([*ssh, "sudo docker inspect --format '{{.Image}}' " + shlex.quote(config["container"])], text=True).strip()
+    if not re.fullmatch(r"sha256:[a-f0-9]{64}", image):
+        raise ValueError("Invalid running sync image")
+    labels = json.loads(subprocess.check_output([*ssh, "sudo docker image inspect --format '{{json .Config.Labels}}' " + shlex.quote(image)], text=True))
+    if labels.get("org.opencontainers.image.revision") == plan["components"]["sync"]:
+        config.update(mode="feed-only", running_image=image)
+
+
+def deploy_bundle(ssh, stage, archive, temporary):
+    quoted = shlex.quote(stage)
+    try:
+        command = "sudo install -d -m 700 " + quoted + " && sudo tar -xzf - -C " + quoted
+        with archive.open("rb") as stream:
+            subprocess.run([*ssh, command], stdin=stream, check=True)
+        command = "sudo " + ("env TMPDIR=" + quoted + " " if temporary else "") + "python3 " + shlex.quote(stage + "/deploy.py") + " " + quoted
+        return subprocess.run([*ssh, command], text=True, stdout=subprocess.PIPE, check=True)
+    finally:
+        if temporary:
+            subprocess.run([*ssh, "sudo rm -rf -- " + quoted], check=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("kind", choices=["server", "sync"])
@@ -68,21 +102,24 @@ def main():
         (temp / "key").chmod(0o600)
         (temp / "known_hosts").write_text(hosts + "\n")
         ssh = ssh_command(config, temp / "key", temp / "known_hosts")
+        if args.kind == "sync":
+            select_sync_mode(config, plan, ssh)
         write(temp / "deployment.json", config)
+        files = feed_files(Path(args.release), plan) if config.get("mode") == "feed-only" else [file for file in Path(args.release).iterdir() if file.is_file()]
         archive = temp / "deploy.tar.gz"
         with tarfile.open(archive, "w:gz") as bundle:
             for source, name in [(Path(args.plan), "plan.json"), (temp / "deployment.json", "deployment.json"),
                 (ROOT / "scripts/deploy-remote.py", "deploy.py"), (ROOT / "scripts/sync-snapshot.py", "sync-snapshot.py"),
                 (ROOT / "scripts/import-sync-updates.py", "import-sync-updates.py"), (ROOT / "client/static/updates.json", "publisher.json")]:
                 bundle.add(source, arcname=name)
-            for file in Path(args.release).iterdir():
-                if file.is_file():
-                    bundle.add(file, arcname="publish/" + file.name)
-        quoted = shlex.quote(stage)
-        command = "sudo install -d -m 700 " + quoted + " && sudo tar -xzf - -C " + quoted
-        with archive.open("rb") as stream:
-            subprocess.run([*ssh, command], stdin=stream, check=True)
-        result = subprocess.run([*ssh, "sudo python3 " + shlex.quote(stage + "/deploy.py") + " " + quoted], text=True, stdout=subprocess.PIPE, check=True)
+            for file in files:
+                bundle.add(file, arcname="publish/" + file.name)
+        temporary_stage = config.get("mode") == "feed-only"
+        if temporary_stage:
+            stage = subprocess.check_output([*ssh, "sudo mktemp -d -p " + shlex.quote(config["updates_directory"]) + " .deploy-XXXXXXXX"], text=True).strip()
+            if Path(stage).parent != Path(config["updates_directory"]) or not re.fullmatch(r"\.deploy-[A-Za-z0-9]{8}", Path(stage).name):
+                raise ValueError("Invalid temporary sync staging directory")
+        result = deploy_bundle(ssh, stage, archive, temporary_stage)
         records = [json.loads(line) for line in result.stdout.splitlines() if line.startswith("{")]
         if not records or records[-1].get("version") != plan["version"]:
             raise ValueError("Deployment completion record is missing")

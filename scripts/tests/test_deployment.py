@@ -1,4 +1,6 @@
 import importlib.util
+import base64
+import hashlib
 import io
 import json
 import os
@@ -183,6 +185,104 @@ class DeploymentTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "cannot deploy"):
                 remote.main()
         run.assert_not_called()
+
+    def test_sync_feed_preserves_the_running_service_and_requires_matching_source(self):
+        image = "sha256:" + "a" * 64
+        config = {"container": "fixture-nexus", "updates_directory": str(self.root / "updates"), "running_image": image}
+        plan = {"version": "0.17.26", "components": {"sync": "b" * 40}}
+        container = {"Id": "container", "Image": image, "RestartCount": 2, "State": {"Running": True, "Health": {"Status": "healthy"}}}
+        labels = {"org.opencontainers.image.revision": "b" * 40, "org.opencontainers.image.version": "0.17.21"}
+        commands = []
+        def command(*args):
+            commands.append(args)
+            if args[:2] == ("docker", "inspect"):
+                return json.dumps([container])
+            if args[:3] == ("docker", "image", "inspect"):
+                return json.dumps([{"Config": {"Labels": labels}}])
+            self.assertEqual(args[:2], ("python3", str(self.root / "import-sync-updates.py")))
+            return "Imported"
+        with patch.object(remote, "run", side_effect=command):
+            result = remote.sync_feed(self.root, config, plan)
+            self.assertEqual(result["version"], "0.17.26")
+            self.assertEqual(result["runtime_version"], "0.17.21")
+            self.assertEqual(result["image"], image)
+            self.assertEqual(result["mode"], "feed-only")
+            self.assertFalse((self.root / "rollback").exists())
+            self.assertEqual(sum(c[0] == "python3" for c in commands), 1)
+            for issue in ["revision", "health", "image"]:
+                with self.subTest(issue=issue):
+                    commands.clear()
+                    labels["org.opencontainers.image.revision"] = "c" * 40 if issue == "revision" else "b" * 40
+                    container["State"]["Health"]["Status"] = "unhealthy" if issue == "health" else "healthy"
+                    container["Image"] = "different" if issue == "image" else image
+                    with self.assertRaises(ValueError):
+                        remote.sync_feed(self.root, config, plan)
+                    self.assertFalse(any(c[0] == "python3" for c in commands))
+
+    def test_sync_feed_selection_requires_the_running_image_revision(self):
+        image = "sha256:" + "a" * 64
+        for revision in ["b" * 40, "c" * 40]:
+            config = {"container": "fixture-nexus"}
+            plan = {"components": {"sync": "b" * 40}}
+            with patch.object(transport.subprocess, "check_output", side_effect=[image + "\n", json.dumps({"org.opencontainers.image.revision": revision})]):
+                transport.select_sync_mode(config, plan, ["ssh", "fixture"])
+            self.assertEqual(config.get("mode"), "feed-only" if revision == "b" * 40 else None)
+
+    def test_sync_feed_payload_requires_all_signed_targets_and_rejects_extra_or_bad_files(self):
+        directory = self.root / "publish"
+        directory.mkdir()
+        targets = {}
+        hashes = {}
+        for platform in ["win32-x64", "darwin-arm64", "linux-x64", "linux-arm64"]:
+            targets[platform] = {}
+            for kind in ["asar", "installer"] + (["rpm"] if platform.startswith("linux") else []):
+                name = platform + "." + kind
+                (directory / name).write_bytes(name.encode())
+                hashes[name] = hashlib.sha256(name.encode()).hexdigest()
+                targets[platform][kind] = {"file": name}
+        payload = {"version": "0.17.26", "targets": targets}
+        envelope = json.dumps({"payload": base64.b64encode(json.dumps(payload).encode()).decode()}).encode()
+        (directory / "haunt-updates.json").write_bytes(envelope)
+        hashes["haunt-updates.json"] = hashlib.sha256(envelope).hexdigest()
+        hashes["server-not-transferred"] = "a" * 64
+        (directory / "SHA256SUMS").write_text("".join(value + "  " + name + "\n" for name, value in hashes.items()))
+        config, plan = {"kind": "sync", "mode": "feed-only"}, {"version": "0.17.26"}
+        self.assertEqual(len(transport.feed_files(directory, plan)), 12)
+        remote.verify_payload(self.root, config, plan)
+        with self.assertRaises(FileNotFoundError):
+            remote.verify_payload(self.root, {"kind": "sync"}, plan)
+        extra = directory / "extra"
+        extra.write_bytes(b"extra")
+        with self.assertRaisesRegex(ValueError, "file set"):
+            remote.verify_payload(self.root, config, plan)
+        extra.unlink()
+        target = directory / "linux-x64.asar"
+        target.write_bytes(b"corrupt")
+        with self.assertRaisesRegex(ValueError, "hash mismatch"):
+            remote.verify_payload(self.root, config, plan)
+        target.unlink()
+        with self.assertRaisesRegex(ValueError, "file set"):
+            remote.verify_payload(self.root, config, plan)
+
+    def test_temporary_sync_staging_is_removed_on_success_and_failure(self):
+        archive = self.root / "bundle.tar.gz"
+        archive.write_bytes(b"fixture")
+        stage = "/srv/updates/.deploy-abcdefgh"
+        for failure in [None, 0, 1]:
+            calls = []
+            def execute(args, **kwargs):
+                calls.append(args)
+                if len(calls) - 1 == failure:
+                    raise subprocess.CalledProcessError(1, args)
+                return subprocess.CompletedProcess(args, 0, stdout="{}")
+            with patch.object(transport.subprocess, "run", side_effect=execute):
+                if failure is None:
+                    transport.deploy_bundle(["ssh", "fixture"], stage, archive, True)
+                    self.assertIn("TMPDIR=" + stage, calls[1][-1])
+                else:
+                    with self.assertRaises(subprocess.CalledProcessError):
+                        transport.deploy_bundle(["ssh", "fixture"], stage, archive, True)
+            self.assertEqual(calls[-1][-1], "sudo rm -rf -- " + stage)
 
     def test_invalid_deployment_targets_fail_before_ssh(self):
         config = {"kind": "sync", "ssh_target": "deploy@example.test", "compose_directory": "/srv/haunt/sync", "container": "nexus", "project": "haunt", "updates_directory": "/srv/haunt/updates", "public_origins": ["https://nexus.example.test"]}
