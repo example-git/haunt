@@ -18,6 +18,10 @@ name: Hub stable release
         description: Run regression suites and native upgrade rehearsals
         type: boolean
         default: true
+      resume_run:
+        description: Optional completed release run whose packages should be published
+        type: string
+        required: false
 permissions:
   actions: read
   contents: write
@@ -28,6 +32,7 @@ jobs:
   prepare:
     runs-on: ubuntu-24.04
     outputs:
+      revision: ${{ steps.source.outputs.revision }}
       version: ${{ steps.plan.outputs.version }}
       tag: ${{ steps.plan.outputs.tag }}
       desktop: ${{ steps.plan.outputs.desktop }}
@@ -36,7 +41,21 @@ jobs:
       has_services: ${{ steps.plan.outputs.has_services }}
       has_web: ${{ steps.plan.outputs.has_web }}
     steps:
+      - name: Select recorded source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.resume_run }}
+        run: |
+          revision="$GITHUB_SHA"
+          if [ -n "$SOURCE_RUN" ]; then
+            revision=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq 'select(.head_branch == "main" and .path == ".github/workflows/release.yml" and .status == "completed") | .head_sha')
+            if [ -z "$revision" ]; then echo "A completed stable release run from main is required"; exit 1; fi
+          fi
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.source.outputs.revision }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -60,6 +79,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         id: restore
+      - uses: actions/download-artifact@v4
+        if: inputs.resume_run != '' && steps.restore.outputs.restored != 'true'
+        with:
+          name: release-plan
+          path: release
+          run-id: ${{ inputs.resume_run }}
+          github-token: ${{ github.token }}
       - run: python scripts/release.py plan --channel stable --bump "$BUMP" --version "$VERSION"
         id: plan
         env:
@@ -79,13 +105,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
   verify:
     needs: prepare
-    if: inputs.verify
+    if: inputs.verify && inputs.resume_run == ''
     uses: ./.github/workflows/verify.yml
   build:
     needs:
       - prepare
       - verify
-    if: ${{ !cancelled() && needs.prepare.result == 'success' && (needs.verify.result == 'success' || needs.verify.result == 'skipped') }}
+    if: ${{ !cancelled() && inputs.resume_run == '' && needs.prepare.result == 'success' && (needs.verify.result == 'success' || needs.verify.result == 'skipped') }}
     uses: ./.github/workflows/build.yml
     with:
       verify: ${{ inputs.verify }}
@@ -100,6 +126,7 @@ jobs:
     needs:
       - prepare
       - build
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && (needs.build.result == 'success' || (inputs.resume_run != '' && needs.build.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -108,6 +135,8 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.revision }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -129,6 +158,8 @@ jobs:
         with:
           pattern: build-*
           path: release/artifacts
+          run-id: ${{ inputs.resume_run || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Reuse verified release
         id: restore
         run: python scripts/release.py restore-release
@@ -169,10 +200,13 @@ jobs:
     needs:
       - prepare
       - publish
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.publish.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.revision }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -223,6 +257,7 @@ jobs:
     needs:
       - prepare
       - publish
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.publish.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -233,6 +268,8 @@ jobs:
           - sync
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.revision }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -269,6 +306,7 @@ jobs:
       - publish
       - deploy
       - web
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.publish.result == 'success' && needs.deploy.result == 'success' && needs.web.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -277,6 +315,8 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.revision }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -302,6 +342,8 @@ jobs:
         with:
           pattern: build-*
           path: release/artifacts
+          run-id: ${{ inputs.resume_run || github.run_id }}
+          github-token: ${{ github.token }}
       - uses: actions/download-artifact@v4
         with:
           pattern: deployed-*
