@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/6cb3d158267b27d259e658cfba9bbac7e5083b05/docs/media-transports.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/af82dfb205f7b81d1d8c27e9b5d658ffd2432740/docs/media-transports.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Media hosting and client protocol
 
