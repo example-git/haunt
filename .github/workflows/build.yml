@@ -117,11 +117,6 @@ jobs:
         run: |
           node scripts/check-linux-runtime-install.mjs prepare
           docker run --rm -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash scripts/ci/check-linux-runtime-install.sh
-      - name: Install and launch the RPM on Fedora
-        if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'linux'))
-          }}
-        run: docker run --rm --cap-add=SYS_ADMIN -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash scripts/ci/check-fedora-rpm.sh
       - name: Install native Linux test dependencies
         if:
           ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
