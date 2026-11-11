@@ -20,7 +20,7 @@ DESKTOP = {
     "win32-x64": {"os": "windows-2022", "platform": "win", "arch": "x64"},
     "linux-x64": {"os": "ubuntu-24.04", "platform": "linux", "arch": "x64"},
     "linux-arm64": {"os": "ubuntu-24.04-arm", "platform": "linux", "arch": "arm64"},
-    "darwin-arm64": {"os": "macos-14", "platform": "mac", "arch": "arm64"},
+    "darwin-arm64": {"os": "macos-15", "platform": "mac", "arch": "arm64"},
 }
 SERVICES = {
     f"{component}-linux-{arch}": {"component": component, "arch": arch,
