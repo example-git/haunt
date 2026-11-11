@@ -2,6 +2,9 @@ name: Build recorded targets
 "on":
   workflow_call:
     inputs:
+      verify:
+        type: boolean
+        default: true
       version:
         type: string
         required: true
@@ -76,7 +79,7 @@ jobs:
       - run:
           npm test -- --run tests/desktop-updates.test.ts tests/desktop-installer.test.ts tests/desktop-appearance.test.ts
           tests/desktop-tray.test.ts tests/desktop-notifications.test.ts
-        if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (true) }}
       - run: npm run build
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - name: Use official Ubuntu package servers
@@ -97,14 +100,14 @@ jobs:
       - run: npm run electron:check
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - name: Start packaged Windows client
-        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.platform == 'win') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (matrix.platform == 'win') }}
         run: node scripts/check-packaged-startup.mjs
       - run: npm run updates:pack
         id: pack
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - name: Verify bundled Linux runtime installation and update
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'linux'))
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'linux'))
           }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -113,7 +116,7 @@ jobs:
           docker run --rm -e CI=true -v "$PWD:/workspace" -w /workspace fedora:44 bash scripts/ci/check-linux-runtime-install.sh
       - name: Install native Linux test dependencies
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && matrix.platform
           == 'linux' && steps.pack.outcome == 'success')) }}
         run:
           sudo apt-get update && sudo apt-get install -y --no-install-recommends xvfb libgtk-3-0 libnss3 libgbm1
@@ -122,12 +125,12 @@ jobs:
           pulseaudio-utils
       - name: Install macOS native UI inspection tools
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
           }}
         run: brew install tesseract imagemagick cliclick
       - name: Install Windows native UI inspection tools
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && matrix.platform == 'win')
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && matrix.platform == 'win')
           }}
         shell: pwsh
         run: |
@@ -135,12 +138,12 @@ jobs:
           [Environment]::GetEnvironmentVariable("Path", "Machine").Split(";") | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
       - name: Verify local macOS signing and in-app bundle replacement
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (matrix.platform == 'mac'))
           }}
         run: node scripts/check-mac-local-update.mjs
       - name: Rehearse a full installer upgrade on the native runner
         if:
-          ${{ steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && steps.pack.outcome
+          ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (inputs.channel == 'stable' && (!cancelled() && steps.pack.outcome
           == 'success')) }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -151,7 +154,7 @@ jobs:
             node scripts/check-installed-upgrade.mjs --skip-notifications
           fi
       - uses: actions/upload-artifact@v4
-        if: ${{ steps.restore.outputs.restored != 'true' && (always()) }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (always()) }}
         with:
           name: native-${{ matrix.target }}-${{ github.run_attempt }}
           path: |-
@@ -167,7 +170,7 @@ jobs:
             client/test-results/capture-code*/**
           retention-days: ${{ inputs.channel == 'dev' && 7 || 30 }}
       - name: Remove native test signing keychain
-        if: ${{ steps.restore.outputs.restored != 'true' && (always() && matrix.platform == 'mac') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (always() && matrix.platform == 'mac') }}
         run: node scripts/mac-ci-keychain.mjs cleanup
       - run: python scripts/release.py describe --target "${{ matrix.target }}" --directory client/release/updates
         name: Record artifact provenance
@@ -264,7 +267,7 @@ jobs:
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
       - run: python3 server/scripts/test-container.py haunt:check
         name: Verify server container
-        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'server') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (matrix.component == 'server') }}
       - run: |-
           docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
           for _ in $(seq 1 60); do
@@ -273,16 +276,16 @@ jobs:
           done
           exit 1
         name: Start isolated sync fixture
-        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
       - run: npm ci
         name: Install sync browser dependencies
-        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
         working-directory: client
       - run: |-
           python scripts/test-sync-container.py haunt-sync:check --client client
           python scripts/test-sync-bundle.py haunt-sync:check --client client
         name: Verify encrypted sync and restart restore
-        if: ${{ steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' && (matrix.component == 'sync') }}
         env:
           HAUNT_SYNC_TEST_DATABASE_URL: postgres://haunt_sync_iteration:synthetic-ci-fixture@127.0.0.1:32768/haunt_sync_iteration?sslmode=disable
       - run: |-
@@ -290,7 +293,7 @@ jobs:
           if [ "$COMPONENT" = sync ]; then image=haunt-sync:check; fi
           docker save "$image" | gzip > "release/$TARGET/$TARGET.docker.tar.gz"
           python scripts/release.py describe --target "$TARGET" --directory "release/$TARGET"
-        name: Export tested container
+        name: Export container
         env:
           COMPONENT: ${{ matrix.component }}
           TARGET: ${{ matrix.target }}
@@ -339,9 +342,12 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
-      - run: npm ci && npm run build:standalone && npm run test:standalone
+      - run: npm ci && npm run build:standalone
         working-directory: client
         if: ${{ steps.restore.outputs.restored != 'true' && (true) }}
+      - run: npm run test:standalone
+        working-directory: client
+        if: ${{ inputs.verify && steps.restore.outputs.restored != 'true' }}
       - run: |-
           mkdir -p release/web
           tar -czf "release/web/haunt-web-${{ inputs.version }}.tar.gz" -C client/dist-standalone .

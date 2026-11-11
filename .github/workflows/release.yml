@@ -14,6 +14,10 @@ name: Hub stable release
         description: Optional explicit X.Y.Z version
         type: string
         required: false
+      verify:
+        description: Run regression suites and native upgrade rehearsals
+        type: boolean
+        default: true
 permissions:
   actions: read
   contents: write
@@ -75,13 +79,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
   verify:
     needs: prepare
+    if: inputs.verify
     uses: ./.github/workflows/verify.yml
   build:
     needs:
       - prepare
       - verify
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && (needs.verify.result == 'success' || needs.verify.result == 'skipped') }}
     uses: ./.github/workflows/build.yml
     with:
+      verify: ${{ inputs.verify }}
       version: ${{ needs.prepare.outputs.version }}
       channel: stable
       desktop: ${{ needs.prepare.outputs.desktop }}
@@ -140,7 +147,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: python scripts/release.py images
-        name: Publish exact tested container images
+        name: Publish exact built container images
       - run: python scripts/release.py publish
         name: Publish coordinated downloads
         env:

@@ -493,7 +493,7 @@ def main():
         record = json.loads((ROOT / "release/public-verification.json").read_text())
         if not record.get("passed") or record["version"] != plan["version"]:
             raise ValueError("Public deployment verification is incomplete")
-        text = f"Haunt {plan['version']} published and deployed.\n\nSource: `{plan['revision']}`\n\nAll target builds, signatures, hashes, native upgrades and public deployments verified."
+        text = f"Haunt {plan['version']} published and deployed.\n\nSource: `{plan['revision']}`\n\nAll target builds, signatures, hashes and public deployments verified."
         run("gh", "release", "edit", plan["tag"], "--repo", REPO, "--notes", text)
         if os.environ.get("GITHUB_STEP_SUMMARY"):
             with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as stream:
