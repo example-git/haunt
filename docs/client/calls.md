@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/cd425f922ff2b65e3614bdf50e3cf4730535b34b/docs/calls.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/7bbe15d911034efad55635389a4fb0383244c3eb/docs/calls.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Calls and video quality
 
