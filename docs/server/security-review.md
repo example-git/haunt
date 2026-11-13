@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/cc5460e8e2efaecba50399cb1a2a70d4b003e102/docs/security-review.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/524c058a156f96771db23559240fc6999122235f/docs/security-review.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Independent encryption review brief
 
@@ -62,4 +62,4 @@ revisions, scope, methods, findings, reproductions, exclusions and limitations.
 Track remediation with a revision and reviewer retest; retain unresolved findings.
 Acceptance requires an actual report and resolution of release-blocking findings
 agreed with the reviewer. This brief does not complete the review. Use
-[SECURITY.md](https://github.com/example-git/haunt-server/blob/cc5460e8e2efaecba50399cb1a2a70d4b003e102/SECURITY.md) for private disclosure.
+[SECURITY.md](https://github.com/example-git/haunt-server/blob/524c058a156f96771db23559240fc6999122235f/SECURITY.md) for private disclosure.
