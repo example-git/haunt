@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/ec38d572e376a584eed70e39f518803fb14b7706/docs/operations.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/c9adf6f170957acb65966653fb93c5ff4947db34/docs/operations.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Linux deployment, maintenance and recovery
 
@@ -47,7 +47,7 @@ Private/link-local/metadata peer addresses are denied by default. If a deploymen
 
 ## Backup and restore
 
-Stop the application and use the same installation identity and explicit database/data-directory environment with `scripts/backup.py`. The tool refuses the active attachment lock. It does a full database dump, so use a dedicated application database. Connection secrets are passed through a controlled environment rather than command arguments. A completed backup contains the database dump, built-in local attachments, storage-provider encryption key and SHA-256 manifest. Registered external stores require separate coordinated snapshots; see [runtime settings and storage](runtime-settings.md).
+Stop the application and use the same installation identity and explicit database/data-directory environment with `scripts/backup.py`. The tool refuses the active attachment lock. It does a full database dump, so use a dedicated application database. Connection secrets are passed through a controlled environment rather than command arguments. A completed backup contains the database dump, built-in local attachments, storage-provider and AI-provider encryption keys, and SHA-256 manifest. Registered external stores require separate coordinated snapshots; see [runtime settings and storage](runtime-settings.md).
 
 ```sh
 # HAUNT_DATABASE_URL, HAUNT_INSTANCE_ID and HAUNT_DATA_DIR must already
