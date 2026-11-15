@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/fe4536bdd7495b9ca78ece9ad4e84a011fcf7080/docs/sync.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/ea011f6e525ee6b26288bbaffb4e6a06267157d0/docs/sync.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Optional encrypted sync
 
