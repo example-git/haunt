@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/47a062def491466a4edf11888dc895d314b52b18/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/ec38d572e376a584eed70e39f518803fb14b7706/docs/client-development.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Client development reference
 
@@ -23,7 +23,7 @@ Outputs are `docs/openapi.json`, `docs/websocket.json` and `docs/endpoints.md`. 
 
 When adding a route, add its contract in `internal/httpapi/openapi_contracts.go`, use a shared request/response type, regenerate and run the relevant tests. Update WebSocket sequencing metadata when adding a command; OpenAPI cannot infer protocol state machines or binary framing from Go types alone.
 
-Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/47a062def491466a4edf11888dc895d314b52b18/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
+Start with `GET /api/v1/instance` for installation identity, capabilities, transport and configured limits. Keep credentials, event cursors, messages and connections scoped to each instance. Implement invitation/login, histories and recovery, uploads, then media using [api.md](api.md) and [media-transports.md](media-transports.md). The browser/Electron client and reusable messaging SDK now live under [`client/`](https://github.com/example-git/haunt-server/blob/ec38d572e376a584eed70e39f518803fb14b7706/client/README.md); that directory documents actual client behavior, Android integration boundaries, builds and verification.
 
 `messages.replies` adds optional `reply_to_id` fields to message creation and returned messages. The target must be a retained, undeleted message in the same conversation when the reply is first committed. Keep the identifier when its target is later edited, deleted or pruned so clients can show a tombstone or unavailable-reference state; retries use the original request ID and reply target.
 
@@ -88,11 +88,6 @@ edits and deletions update the index atomically; old caches migrate in cancellab
 contiguous ranges and completed archive ranges serve navigation from local
 storage. Messages outside the downloaded archive are not search results. Device
 storage quotas and browser eviction still apply.
-
-AI channels remove cached messages and private archive entries through the server's
-authoritative `pruned_through` boundary. Reconnect and imported archives apply the
-same boundary. Message archives preserve `ai_author` snapshots for retained AI
-replies; their empty human `author_id` must not resolve to a user profile.
 
 The browser also keeps a separate private text archive. Downloaded readable text
 survives live-chat deletion; restoring that archive never recreates live messages
