@@ -58,6 +58,26 @@ class DeploymentTests(unittest.TestCase):
         original = b"PRIVATE_SETTING=unchanged\r\nOTHER=also-unchanged"
         self.assertEqual(remote.server_environment(original, manifest), original + b"\r\nHAUNT_CLIENT_UPDATE_MANIFEST_URL=" + manifest.encode() + b"\r\n")
 
+    def test_provider_versions_can_refresh_during_deployment(self):
+        cache = self.root / "ai-client-versions.json"
+        config = self.root / "settings.json"
+        versions = {"claude": "2.1", "codex": "0.171", "antigravity": "1.5.13"}
+        cache.write_text(json.dumps(versions))
+        config.write_text("{}")
+        expected = {str(p): remote.digest(p) for p in (cache, config)}
+        versions["antigravity"] = "1.5.14"
+        cache.write_text(json.dumps(versions))
+        self.assertEqual(remote.verify_server_files(expected, self.root, []), 1)
+        with self.assertRaisesRegex(ValueError, "Preserved file changed"):
+            remote.verify_server_files(expected, self.root, [str(cache)])
+        config.write_text('{"changed":true}')
+        with self.assertRaisesRegex(ValueError, "settings.json"):
+            remote.verify_server_files(expected, self.root, [])
+        config.write_text("{}")
+        cache.write_text('{"unexpected":"value"}')
+        with self.assertRaisesRegex(ValueError, "Invalid provider version cache"):
+            remote.verify_server_files(expected, self.root, [])
+
     def test_server_feed_selection_and_startup_failure_preserve_configuration(self):
         for outcome in ["success", "startup-failure", "schema-advanced"]:
             with self.subTest(outcome=outcome), tempfile.TemporaryDirectory(dir=self.root) as temporary:

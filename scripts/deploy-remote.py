@@ -27,6 +27,24 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def verify_server_files(expected, data, configured):
+    cache = data / "ai-client-versions.json"
+    unchanged = 0
+    for name, expected_digest in expected.items():
+        path = Path(name)
+        if digest(path) == expected_digest:
+            unchanged += 1
+            continue
+        check(path == cache and str(path) not in configured, "Preserved file changed: " + name)
+        # Haunt refreshes these public provider versions at startup and every six hours.
+        check(not path.is_symlink() and path.stat().st_size <= 4096, "Invalid provider version cache")
+        versions = json.loads(path.read_bytes())
+        check(isinstance(versions, dict) and set(versions) == {"antigravity", "claude", "codex"}
+              and all(isinstance(v, str) and re.fullmatch(r"\d+\.\d+[\w.-]*", v, re.ASCII)
+                      for v in versions.values()), "Invalid provider version cache")
+    return unchanged
+
+
 def read(origin, route, headers=None):
     with urllib.request.urlopen(urllib.request.Request(origin + route, headers=headers or {}), timeout=10) as response:
         return json.load(response), response.headers
@@ -164,14 +182,14 @@ def server(stage, config, plan):
         check(all(current.get(key) == value for key, value in state["settings"].items()), "Server settings changed")
         current_roles = json.loads(sql("SELECT COALESCE(jsonb_object_agg(id::text,permissions),'{}'::jsonb)::text FROM chatxo.roles"))
         check(all(current_roles.get(key) == value for key, value in state["roles"].items()), "Server role permissions changed")
-        check(all(digest(p) == value for p, value in expected_files.items()), "Server configuration or extension files changed")
+        preserved_count = verify_server_files(expected_files, data, config["preserved_files"])
         pid = prop("MainPID")
         check(digest("/proc/" + pid + "/exe") == expected and prop("NRestarts") == "0", "Server executable or restart verification failed")
         app = stage / "publish" / ("haunt-app-linux-" + config["arch"] + ".tar.gz")
         with tarfile.open(app) as archive:
             marker = json.load(archive.extractfile("web/haunt-build.json"))
         check(read(config["local_origin"], "/haunt-build.json")[0] == marker, "Embedded web build mismatch")
-        return {"version": plan["version"], "sha256": expected, "instance_id": before["instance_id"], "rollback": str(backup), "preserved_files": len(state["files"]), "manifest_url": manifest, "environment_sha256": environment_sha256, "public_verification": "pending"}
+        return {"version": plan["version"], "sha256": expected, "instance_id": before["instance_id"], "rollback": str(backup), "preserved_files": preserved_count, "manifest_url": manifest, "environment_sha256": environment_sha256, "public_verification": "pending"}
     except Exception:
         compatible = sql("SELECT max(version) FROM chatxo.schema_migrations") == state["schema"]
         if compatible or environment_changed:
