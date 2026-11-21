@@ -21,11 +21,15 @@ def main():
     command = ["go", "build", "-trimpath", f"-ldflags=-s -w -X main.version={plan['version']} -X {module}/{symbol}={origin}",
         "-o", str(output / ("haunt-" + component + "-linux-" + arch)), "./cmd/haunt" + ("-sync" if component == "sync" else "")]
     if component == "server":
+        subprocess.run(["python3", "scripts/build-search-runtime.py", arch], cwd=ROOT / "server", check=True)
         stamp(plan, ROOT / "server/client")
         command[2:2] = ["-tags", "webclient"]
         subprocess.run(["cp", "-a", str(ROOT / "client/dist"), str(ROOT / "server/client/dist")], check=True)
     environment = {**os.environ, "CGO_ENABLED": "0", "GOOS": "linux", "GOARCH": arch}
     subprocess.run(command, cwd=ROOT / component, env=environment, check=True)
+    if component == "server":
+        subprocess.run(["go", "test", "-tags", "bundled_search_test", "./internal/ai/searchruntime", "-run", "^TestBundledSearch$", "-count=1"],
+            cwd=ROOT / component, env=environment, check=True)
     executable = output / ("haunt-" + component + "-linux-" + arch)
     version = subprocess.check_output([str(executable), "-version" if component == "server" else "--version"], text=True, stderr=subprocess.STDOUT).strip().split()[-1]
     if version != plan["version"]:
