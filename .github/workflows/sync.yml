@@ -1,7 +1,5 @@
-name: Build and publish optional sync
+name: Verify optional sync images
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
@@ -16,6 +14,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - uses: ./.github/actions/components
         id: components
       - name: Validate single-container tunnel deployment configuration
@@ -34,7 +35,7 @@ jobs:
           cache-dependency-path: sync/go.sum
       - uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
@@ -42,7 +43,7 @@ jobs:
       - name: Start isolated database fixture
         run: |
           docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
-          for attempt in $(seq 1 40); do
+          for _ in $(seq 1 40); do
             if docker exec chatxo-identity-check pg_isready -h 127.0.0.1 -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
             sleep 1
           done
@@ -70,6 +71,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - uses: ./.github/actions/components
         id: components
       - uses: actions/setup-go@v6
@@ -78,7 +82,7 @@ jobs:
           cache-dependency-path: sync/go.sum
       - uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
@@ -129,67 +133,22 @@ jobs:
       - name: Start isolated database fixture
         run: |
           docker run -d --name chatxo-identity-check -p 127.0.0.1:32768:5432 -e POSTGRES_DB=haunt_sync_iteration -e POSTGRES_USER=haunt_sync_iteration -e POSTGRES_PASSWORD=synthetic-ci-fixture postgres:16-alpine
-          for attempt in $(seq 1 40); do
+          for _ in $(seq 1 40); do
             if docker exec chatxo-identity-check pg_isready -h 127.0.0.1 -U haunt_sync_iteration -d haunt_sync_iteration; then break; fi
             sleep 1
           done
       - name: Verify standalone TLS binary path and encrypted restart restore
         env:
           HAUNT_SYNC_TEST_DATABASE_URL: postgres://haunt_sync_iteration:synthetic-ci-fixture@127.0.0.1:32768/haunt_sync_iteration?sslmode=disable
-        run: python3 scripts/test-sync-container.py haunt-sync:check --client client
+        run: python scripts/test-sync-container.py haunt-sync:check --client client
       - name: Verify encrypted sync and disposable tunnel restart
-        run: python3 scripts/test-sync-bundle.py haunt-sync:check --client client
+        run: python scripts/test-sync-bundle.py haunt-sync:check --client client
       - name: Export tested image and binaries
         run: |
           docker save haunt-sync:check | gzip > release/haunt-sync-linux-${{ matrix.arch }}.docker.tar.gz
           cd release
-          sha256sum * > SHA256SUMS
+          sha256sum -- * > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
           name: haunt-sync-linux-${{ matrix.arch }}
           path: release/*
-  publish:
-    needs: [protocol, build]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: haunt-sync-linux-*
-          path: release
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish exact tested images
-        env:
-          VERSION: ${{ needs.build.outputs.version }}
-          REVISION: ${{ needs.build.outputs.sync }}
-          HUB_REVISION: ${{ github.sha }}
-        run: |
-          image=ghcr.io/example-git/haunt-sync
-          sources=()
-          for arch in amd64 arm64; do
-            directory="release/haunt-sync-linux-$arch"
-            (cd "$directory" && sha256sum --check SHA256SUMS)
-            gzip -dc "$directory/haunt-sync-linux-$arch.docker.tar.gz" | docker load
-            test "$(docker image inspect haunt-sync:check --format '{{.Architecture}}')" = "$arch"
-            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.source"}}')" = https://github.com/example-git/haunt-sync
-            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$REVISION"
-            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "org.opencontainers.image.version"}}')" = "$VERSION"
-            test "$(docker image inspect haunt-sync:check --format '{{index .Config.Labels "vg.xo.haunt.hub-revision"}}')" = "$HUB_REVISION"
-            target="$image:build-$HUB_REVISION-$arch"
-            docker tag haunt-sync:check "$target"
-            docker push "$target"
-            sources+=("$(docker image inspect "$target" --format '{{index .RepoDigests 0}}')")
-          done
-          docker buildx imagetools create --annotation "index:org.opencontainers.image.source=https://github.com/example-git/haunt-sync" --annotation "index:org.opencontainers.image.description=Haunt encrypted sync service" -t "$image:$VERSION" "${sources[@]}"
-          docker buildx imagetools create --annotation "index:org.opencontainers.image.source=https://github.com/example-git/haunt-sync" --annotation "index:org.opencontainers.image.description=Haunt encrypted sync service" -t "$image:latest" "${sources[@]}"
-          docker buildx imagetools inspect "$image:$VERSION" --raw > version.json
-          docker buildx imagetools inspect "$image:latest" --raw > latest.json
-          cmp version.json latest.json
-          python3 -c 'import json; d=json.load(open("version.json")); assert {(x["platform"]["os"],x["platform"]["architecture"]) for x in d["manifests"]}=={("linux","amd64"),("linux","arm64")}'
