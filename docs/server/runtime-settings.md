@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5cd181a03e7f51a11bd06af584b8fc4dcaa41ef4/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/0b57290a1f5d36a16cb6c37f2260c7cda6951a38/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Live server configuration and attachment storage
 
@@ -16,15 +16,25 @@ The following settings apply without a restart:
 | Setting | Effect |
 | --- | --- |
 | Image/video upload sizes | New attachment reservations; actual content is checked |
-| Attachment storage budget | All providers combined, including in-flight reservations; cannot be set below used space |
+| Attachment storage budget | Shared across channel storage providers. A new upload can reclaim the oldest attachments to fit. |
 | Attachment retention | Expiry for new uploads; existing expiry dates remain intact |
 | Channel message budget and retention | Reads honor age immediately; writes and maintenance prune oldest retained channel data |
+| AI channel and aggregate budgets | Include messages, provider replay, tool results, turn state and bounded active reservations; remove the oldest coherent history prefix to 80% of the exceeded budget |
 | DM text budget and retention | Independent budget; full storage rejects writes; zero age retention keeps messages until deletion |
 | Voice room and media-connection limits | New admissions/connections; existing calls remain connected |
 | Invitation registration | Allows or closes new registrations; invitations are still required |
 | Temporary session duration | New nonremembered sessions and devices that turn off Remember me; remembered logins remain indefinite |
 
-An upload keeps one policy and one provider from reservation through completion.
+When an upload needs room, Haunt validates and stages it before reclaiming the
+oldest files in the same budget. Channel attachments and encrypted DM images
+have separate budgets. A sender’s DM limit reclaims their own images first.
+Message text stays in history. Active uploads and unclaimed files from the last
+ten minutes are protected. A file larger than the budget still fails. Keep
+temporary disk space available for the two concurrent upload slots.
+The channel storage budget can only be lowered to a value at or above current
+usage.
+
+An upload keeps its selected provider from reservation through completion.
 Provider activation, reservations and budget changes share the existing short
 storage-accounting transaction. No remote network operation runs under that lock.
 The API is the authority for attachment upload sizes. Configure a reverse proxy's
@@ -86,6 +96,10 @@ S3 credentials are encrypted using AES-GCM, bound to the provider ID. The 32-byt
 before the server starts. Restoring a database containing encrypted credentials
 without this key fails startup rather than generating an unusable replacement.
 
+AI account credentials use a separate `ai-provider.key`, also included in backup
+and restore. Keep both keys with the matching database; missing AI keys prevent
+startup when encrypted accounts or pending connections exist.
+
 The backup includes the database and built-in local attachments. External provider
 objects, including registered local folders, require their own snapshots/backups;
 the backup manifest lists those providers without plaintext credentials. Restore
@@ -97,3 +111,89 @@ provider versions or bills.
 
 The S3 transport uses the AWS SDK for Go v2 and its bounded multipart transfer
 client; see [AWS S3 SDK documentation](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/go_s3_code_examples.html).
+
+## AI channels
+
+AI channels share a persistent text conversation. Server roles control visibility,
+posting, **Use AI** (`262144`) and **Switch AI preset** (`524288`). A member allowed
+to post but denied Use AI can send messages without starting generation. Mentioning
+`<@ai:PRESET_UUID>` selects the channel-wide persona for that message and subsequent
+messages. An already running response retains its original settings. Historical replies keep
+the assistant name and immutable avatar version used when they were written.
+
+Channel managers configure the account, model, instructions, assistant identity,
+personas and storage limit. **AI connections** requires ManageConfiguration to
+connect, reconnect or disconnect accounts. Initial OAuth connection runs in the
+desktop app; configured channels and authorized settings also work on the web.
+Claude uses a dynamic loopback callback. Codex requires localhost port 1455 and
+reports a conflict if another application owns it. Antigravity uses the provider's
+hosted callback and a pasted authorization code or callback URL. Permanent provider
+credentials remain encrypted on the server, which refreshes them independently
+of desktop connections. Provider request versions are refreshed at startup and every
+six hours, with a persistent `ai-client-versions.json` cache and reference-version
+fallbacks. Explicit `CLAUDE_CODE_VERSION`, `CODEX_VERSION` and
+`ANTIGRAVITY_CLI_VERSION` overrides must be valid version strings; invalid values
+fail startup. An active request keeps one identity snapshot.
+
+The server commits each human message and its queue assignment together. While
+a response is running, consecutive requests for the same personality can share
+the next response. The model receives one user turn containing each contribution
+in order, with its own author and reply information. An explicit mention that
+selects a different personality starts another batch. Once a batch starts,
+later arrivals wait for the following response. The original posts remain
+individually visible in the channel. The server sends activity and response
+checkpoints through channel events. After
+restart, ambiguous in-flight requests are interrupted and require an explicit retry.
+Partial responses remain visible. A missing account, unsupported selected model,
+permission loss or exhausted storage is reported without substituting providers.
+
+The channel header shows the selected provider and model. Everyone viewing the
+channel sees its activity above the composer and any “Replying to” header. A quiet
+provider changes to “Waiting for provider” after two minutes and can still
+complete. A contributor to the response or a channel manager can cancel it. Tool calls
+can continue across rounds for the life of the response. Intermediate results
+and provider replay belong to that response.
+
+Search uses Brave and DuckDuckGo through the server’s bundled private SearXNG runtime. Operators can set
+`HAUNT_DIFFBOT_KEY` for a fallback search when upstream engines fail.
+`read_url` turns public pages into Markdown without executing JavaScript.
+The reader tries a direct connection first and can use cached public proxy lists
+for a failed route. An unavailable page returns an error for that tool call.
+
+Add a personality to configure its name, description, instructions and avatar.
+Members can open a personality’s profile by clicking its name or portrait on a
+channel message. They can mention it to select it for the channel. When a manager enables
+agent switching, the agent is instructed to switch only on an explicit request from the
+current user. The default takes effect after the current reply. A manager can instead
+select **During the current reply** to let the new personality continue immediately.
+Earlier text keeps its original author. Removing the last personality restores the base identity.
+
+The **Hide from AI** checkbox below the AI-channel composer applies to each
+message as it is sent. Checked messages stay in member history with a read-only
+marker beside the author. They do not trigger a response, select a personality,
+or contribute text or attachments to model history or reply references. Existing
+messages retain their original AI visibility. Editing a post preserves its flag.
+
+Haunt sends up to ten contextual images to a vision model per request, within
+the server’s image byte limits. Images attached to pending messages and their
+direct reply targets take priority over older history. The `view_user_profile`
+tool can look up a member by user ID or exact username. It returns public profile
+details and makes the portrait available to the current response. For animated
+GIF portraits, the model receives the first frame as a PNG.
+
+Channels using Codex can generate images with a requested member portrait as
+a reference, or edit images from a requesting message, its direct reply target,
+or a profile lookup. Both image tools authenticate with the selected Codex
+connection. Results appear as channel attachments. A later direct reply to
+the image includes it in model input.
+
+Defaults are 64 MiB per AI channel and 128 MiB across AI conversations, both
+subordinate to the server text budget. Administrators can change the defaults in
+Limits & access or set `HAUNT_AI_CHANNEL_MAX_BYTES` and `HAUNT_AI_TEXT_MAX_BYTES`
+before the first configuration save. Existing age retention also applies. Pruning
+removes the oldest coherent history prefix and dependent turn records; clients
+evict that history from local caches, including after reconnect. Active work has a
+finite reservation and can report a storage error. Images use attachment budgets;
+pruned message attachments are reclaimed through the existing blob deletion path.
+PostgreSQL deletion permits space reuse and does not promise immediate database,
+index or WAL shrinkage.
