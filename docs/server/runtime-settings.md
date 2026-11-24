@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5cd181a03e7f51a11bd06af584b8fc4dcaa41ef4/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/19dc8eeac3087ac77cf0326e2b120b1c0a12f2ef/docs/runtime-settings.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Live server configuration and attachment storage
 
