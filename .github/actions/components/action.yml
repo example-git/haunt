@@ -57,4 +57,4 @@ runs:
         path: sync
         persist-credentials: false
     - shell: bash
-      run: python3 scripts/check-pins.py
+      run: python scripts/check-pins.py
