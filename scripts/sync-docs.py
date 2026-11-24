@@ -40,7 +40,7 @@ def main():
             if component == "server" and relative == Path("docs/container.md"):
                 text = text.replace("HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt-server",
                                     "HAUNT_APP_UPDATE_REPOSITORY=example-git/haunt")
-                text = text.replace("The `All-in-one container` GitHub workflow", "The hub's `Publish coordinated container` GitHub workflow")
+                text = text.replace("The `All-in-one container` GitHub workflow", "The hub's `Hub stable release` GitHub workflow")
                 text = "For the published image and first-login instructions, use the [central installation guide](../installation.md). The detailed source-build and runtime guide follows.\n\n" + text
             def link(match):
                 target = match[2]
