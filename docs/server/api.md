@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5cd181a03e7f51a11bd06af584b8fc4dcaa41ef4/docs/api.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/7ca7f367b7dcee38b9344b0d4bbe92702172d1ce/docs/api.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Server API v1
 
