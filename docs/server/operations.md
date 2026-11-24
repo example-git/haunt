@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/5cd181a03e7f51a11bd06af584b8fc4dcaa41ef4/docs/operations.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/6cb3d158267b27d259e658cfba9bbac7e5083b05/docs/operations.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Linux deployment, maintenance and recovery
 
