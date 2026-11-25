@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/bce896b4eb9587f10f5482d26c63ffec1f4682ea/docs/architecture.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/db82669b06592a4b3dedfc240c36ecf876063a23/docs/architecture.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Haunt architecture
 
