@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/610b9323d88ed46820ec5774a19a2d30f97d8004/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/7716d2b5877299ecdcddd3e4268e61c810fd7af6/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Generated HTTP endpoints
 
@@ -59,7 +59,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | GET | `/api/v1/conversations/{id}/encryption/events` | Read ordered MLS group commits and welcome messages | Bearer | 200 |
 | GET | `/api/v1/conversations/{id}/messages` | Read message history and recovery cursors | Bearer | 200 |
 | GET | `/api/v1/conversations/{id}/messages/{message}` | Read a retained message by identity within an authorized conversation | Bearer | 200 |
-| GET | `/api/v1/conversations/{id}/messages/{message}/embeds` | Fetch up to three cached public link previews for a visible retained message | Bearer | 200 |
+| GET | `/api/v1/conversations/{id}/messages/{message}/embeds` | Read a page of public link previews for a visible retained message, with optional continuation for image galleries | Bearer | 200 |
 | GET | `/api/v1/conversations/{id}/messages/{message}/embeds/image` | Download a bounded preview image after rechecking message access | Bearer | 200 |
 | GET | `/api/v1/conversations/{id}/messages/{message}/embeds/video` | Stream a bounded video byte range using a media-only ticket | Public | 206 |
 | GET | `/api/v1/conversations/{id}/messages/{message}/embeds/video-ticket` | Create a media-only playback ticket valid for 30 minutes; message and session access are rechecked on every range | Bearer | 200 |
