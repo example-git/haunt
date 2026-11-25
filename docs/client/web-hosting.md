@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/dfedc1782715d53dc00002bd02bad8d6f26e5755/docs/web-hosting.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-client](https://github.com/example-git/haunt-client/blob/a106c892e5ace638aecdc8978b64652604bbee86/docs/web-hosting.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Standalone web hosting
 
