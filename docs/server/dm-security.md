@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/eebb1f5509059af8ca98888618f705c70b89a806/docs/dm-security.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/e3a5efdeeb74ab310debeadd8c82098e73e4e4b2/docs/dm-security.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Direct messages: encryption, storage and recovery
 

@@ -1,4 +1,4 @@
-> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/eebb1f5509059af8ca98888618f705c70b89a806/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
+> Documentation from the pinned [example-git/haunt-server](https://github.com/example-git/haunt-server/blob/e3a5efdeeb74ab310debeadd8c82098e73e4e4b2/docs/endpoints.md) source. Refresh with `python3 scripts/sync-docs.py`.
 
 # Generated HTTP endpoints
 
@@ -45,6 +45,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | GET | `/api/v1/channels/{id}` | Get a channel and effective permissions | Bearer | 200 |
 | GET | `/api/v1/channels/{id}/ai` | Read AI channel settings | Bearer | 200 |
 | GET | `/api/v1/channels/{id}/ai/avatar` | Read an authorized AI avatar | Bearer | 200 |
+| GET | `/api/v1/channels/{id}/ai/media/{attachment}/instructions` | Read edit instructions for an image version | Bearer | 200 |
 | GET | `/api/v1/channels/{id}/ai/presets` | List mentionable AI personas | Bearer | 200 |
 | GET | `/api/v1/channels/{id}/ai/presets/{preset}/avatar` | Read an authorized AI avatar | Bearer | 200 |
 | GET | `/api/v1/channels/{id}/ai/turns` | Read authoritative AI turn status after reconnect | Bearer | 200 |
@@ -136,6 +137,7 @@ Interactive reference: `/docs/`. Specifications: `/openapi.json` and `/websocket
 | PUT | `/api/v1/channels/{id}` | Update a channel | Bearer | 200 |
 | PUT | `/api/v1/channels/{id}/ai` | Configure an AI channel (ManageChannels) | Bearer | 200 |
 | PUT | `/api/v1/channels/{id}/ai/avatar` | Upload a bounded AI avatar (ManageChannels) | Bearer | 200 |
+| PUT | `/api/v1/channels/{id}/ai/media/{attachment}/instructions` | Save or clear edit instructions for an image version | Bearer | 200 |
 | PUT | `/api/v1/channels/{id}/ai/presets/{preset}` | Update an AI persona (ManageChannels) | Bearer | 200 |
 | PUT | `/api/v1/channels/{id}/ai/presets/{preset}/avatar` | Upload a bounded AI avatar (ManageChannels) | Bearer | 200 |
 | PUT | `/api/v1/channels/{id}/permissions/{role}` | Set a role's permission override | Bearer | 204 |
